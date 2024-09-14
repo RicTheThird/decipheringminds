@@ -33,7 +33,7 @@ code {
 
 /* Calendar responsiveness */
 .react-calendar {
-  width: 40vw !important;
+  width: 60% !important;
   height: auto !important;
   background-color: white;
   border-radius: 8px;
@@ -42,7 +42,7 @@ code {
 }
 
 /* Calendar style adjustments for smaller screens */
-@media (max-width: 600px) {
+@media (min-width: 600px) {
   .react-calendar {
     max-width: 100% !important;
   }

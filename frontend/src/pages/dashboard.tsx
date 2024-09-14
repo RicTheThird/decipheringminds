@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
       </Box>
 
       <Typography variant="h6" align="center" gutterBottom>
-        Admin
+        Ric Ferrancullo
       </Typography>
 
       <Divider />
@@ -104,7 +104,7 @@ const Dashboard: React.FC = () => {
             style={{ width: '25px', height: '25px', borderRadius: '50%' }} 
           />
           </ListItemIcon>
-          <ListItemText primary="Calendar" />
+          <ListItemText primary="Book Appointment" />
         </ListItem>
 
         <Divider />
@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
         </ListItem>
 
         {/* Logout */}
-        <ListItem>
+        <ListItem component={Link} to="/login">
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>

@@ -43,7 +43,7 @@ const Headers: React.FC = () => {
     {
       name: "Dashboard",
       component: Dashboard,
-      route: "/dashboard",
+      route: "/dashboard/home",
     },
     {
       name: "Home",
