@@ -1,0 +1,6 @@
+@DecipheringMinds.BackEnd_HostAddress = http://localhost:5228
+
+GET {{DecipheringMinds.BackEnd_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
