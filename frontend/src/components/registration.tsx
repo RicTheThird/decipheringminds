@@ -30,6 +30,8 @@ const Register: React.FC = () => {
     password: "",
   });
 
+  const [isSubmitted, setSubmitted] = useState(false);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues({
       ...formValues,
@@ -47,6 +49,7 @@ const Register: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission, validation, etc.
+    setSubmitted(true);
     console.log(formValues);
   };
 
@@ -86,125 +89,141 @@ const Register: React.FC = () => {
         >
           DecipheringMinds
         </Typography>
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={3} paddingTop={5}>
-            {/* First Name */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="First Name"
-                name="firstName"
-                value={formValues.firstName}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                required
-              />
-            </Grid>
+        {isSubmitted && (
+          <>
+            <Typography variant="h5" component="div" gutterBottom>
+              Registration Successful!
+            </Typography>
 
-            {/* Last Name */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Last Name"
-                name="lastName"
-                value={formValues.lastName}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                required
-              />
-            </Grid>
-
-            {/* Birth Date */}
-            <Grid item xs={12} sm={6}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label="Birth Date"
-                  value={formValues.birthDate}
-                  onChange={handleDateChange}
-                  slots={{
-                    textField: (textFieldProps) => (
-                      <TextField fullWidth required {...textFieldProps} />
-                    ),
-                  }}
-                  //slots={(params) => <TextField {...params} fullWidth required />}
+            {/* Confirmation Message */}
+            <Typography variant="body1" color="textSecondary" gutterBottom>
+              Thank you for registering. Please check your email to confirm your
+              account.
+            </Typography>
+          </>
+        )}
+        {!isSubmitted && (
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={3} paddingTop={5}>
+              {/* First Name */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="First Name"
+                  name="firstName"
+                  value={formValues.firstName}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                  required
                 />
-              </LocalizationProvider>
-            </Grid>
+              </Grid>
 
-            {/* Gender */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Gender"
-                name="gender"
-                value={formValues.gender}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                select
-                sx={{ textAlign: "left" }}
-                required
-              >
-                <MenuItem value="male">Male</MenuItem>
-                <MenuItem value="female">Female</MenuItem>
-                <MenuItem value="other">Other</MenuItem>
-              </TextField>
-            </Grid>
+              {/* Last Name */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Last Name"
+                  name="lastName"
+                  value={formValues.lastName}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                  required
+                />
+              </Grid>
 
-            {/* Email */}
-            <Grid item xs={12}>
-              <TextField
-                label="Email"
-                name="email"
-                type="email"
-                value={formValues.email}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                required
-              />
-            </Grid>
+              {/* Birth Date */}
+              <Grid item xs={12} sm={6}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Birth Date"
+                    value={formValues.birthDate}
+                    onChange={handleDateChange}
+                    slots={{
+                      textField: (textFieldProps) => (
+                        <TextField fullWidth required {...textFieldProps} />
+                      ),
+                    }}
+                    //slots={(params) => <TextField {...params} fullWidth required />}
+                  />
+                </LocalizationProvider>
+              </Grid>
 
-            {/* Password */}
-            <Grid item xs={12}>
-              <TextField
-                label="Password"
-                name="password"
-                type="password"
-                value={formValues.password}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                required
-              />
-            </Grid>
+              {/* Gender */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Gender"
+                  name="gender"
+                  value={formValues.gender}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                  select
+                  sx={{ textAlign: "left" }}
+                  required
+                >
+                  <MenuItem value="male">Male</MenuItem>
+                  <MenuItem value="female">Female</MenuItem>
+                  <MenuItem value="other">Other</MenuItem>
+                </TextField>
+              </Grid>
 
-            {/* Confirm Password */}
-            <Grid item xs={12}>
-              <TextField
-                label="Confirm Password"
-                name="confirm-password"
-                type="password"
-                value={formValues.password}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                required
-              />
-            </Grid>
+              {/* Email */}
+              <Grid item xs={12}>
+                <TextField
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={formValues.email}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                  required
+                />
+              </Grid>
 
-            {/* Submit Button */}
-            <Grid item xs={12}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-              >
-                Register
-              </Button>
+              {/* Password */}
+              <Grid item xs={12}>
+                <TextField
+                  label="Password"
+                  name="password"
+                  type="password"
+                  value={formValues.password}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                  required
+                />
+              </Grid>
+
+              {/* Confirm Password */}
+              <Grid item xs={12}>
+                <TextField
+                  label="Confirm Password"
+                  name="confirm-password"
+                  type="password"
+                  value={formValues.password}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                  required
+                />
+              </Grid>
+
+              {/* Submit Button */}
+              <Grid item xs={12}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  //onClick={handleSubmit}
+                >
+                  Register
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </form>
+          </form>
+        )}
         <Box mt={2}>
           <Typography variant="body2">
             Already have an account?{" "}

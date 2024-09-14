@@ -13,7 +13,7 @@ const BookingCalendar: React.FC = () => {
   return (
     <div>
       <Typography variant="h4" gutterBottom>
-        Calendar
+        Book Appointment
       </Typography>
       <Typography variant="body1" paddingTop={5}>
         <div className="calendar-container">

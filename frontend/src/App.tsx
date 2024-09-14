@@ -17,6 +17,7 @@ import Questionnaire from "./components/questionnaire";
 import Diagnostic from "./components/diagnostic";
 import PyschReport from "./components/psych-report";
 import BookingCalendar from "./components/calendar";
+import QuestionnaireForm from "./components/questionnaire-form";
 
 const App: React.FC = () => {
   return (
