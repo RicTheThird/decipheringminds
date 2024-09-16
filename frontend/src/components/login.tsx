@@ -1,18 +1,40 @@
 // src/components/Login.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Link, Container } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../services/authService';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const handleLogin = () => {
+  const [formValues, setFormValues] = useState({
+    userName: "",
+    password: "",
+  });
+
+  const [loginError, setLoginError] = useState('');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormValues({
+      ...formValues,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     // Login logic here
-    navigate('/home');
+    e.preventDefault();
+    try {
+      await login(formValues.userName, formValues.password)
+      navigate('/home');
+    } catch (error) {
+      setLoginError("Invalid User name or password")
+    }
+
   };
 
   return (
@@ -47,30 +69,45 @@ const Login: React.FC = () => {
         <Typography variant="h4" className="gradient-text" style={{ fontWeight: 700 }} gutterBottom>
           DecipheringMinds
         </Typography>
-        
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Password"
-          variant="outlined"
-          type="password"
-          fullWidth
-          margin="normal"
-        />
 
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleLogin}
-          sx={{ marginTop: 2, padding: '10px' }}
-        >
-          Login
-        </Button>
+        {loginError &&
+          <Typography variant="body2" color="error">
+            {loginError}
+          </Typography>
+        }
+        <form onSubmit={handleLogin}>
+          <TextField
+            label="Email"
+            variant="outlined"
+            fullWidth
+            required
+            type="email"
+            margin="normal"
+            name="userName"
+            value={formValues.userName}
+            onChange={handleInputChange}
+          />
+          <TextField
+            label="Password"
+            variant="outlined"
+            type="password"
+            fullWidth
+            required
+            name='password'
+            margin="normal"
+            value={formValues.password}
+            onChange={handleInputChange}
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ marginTop: 2, padding: '10px' }}
+          >
+            Login
+          </Button></form>
 
         {/* Registration Link */}
         <Box mt={2}>

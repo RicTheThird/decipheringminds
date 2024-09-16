@@ -17,13 +17,13 @@ import { useTheme } from "@mui/material/styles";
 import { Link, useNavigate } from "react-router-dom";
 import Dashboard from "../pages/dashboard";
 import Home from "../pages/home";
+import { isAuthenticated, logout } from "../services/authService";
 
 const Headers: React.FC = () => {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
   // Toggle Drawer
   const toggleDrawer =
     (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -38,18 +38,28 @@ const Headers: React.FC = () => {
     };
 
   // Drawer menu items
-  const menuItems1 = ["Dashboard", "Home", "Services", "About Us", "Contact"];
   const menuItems = [
     {
       name: "Dashboard",
-      component: Dashboard,
       route: "/dashboard/home",
+      show: isAuthenticated(),
     },
     {
       name: "Home",
-      component: Home,
       route: "/home",
+      show: true,
     },
+    {
+      name: "Login",
+      route: "/login",
+      show: !isAuthenticated(),
+    },
+    {
+      name: "Register",
+      route: "/register",
+      show: !isAuthenticated(),
+    },
+    
   ];
 
   const onMenuClicked = (route: string) => navigate(route);
@@ -62,7 +72,7 @@ const Headers: React.FC = () => {
       onKeyDown={toggleDrawer(false)}
     >
       <List>
-        {menuItems.map((m, index) => (
+        {menuItems.filter(m => m.show).map((m, index) => (
           <ListItem key={index} onClick={() => onMenuClicked(m.route)}>
             <ListItemText primary={m.name} />
           </ListItem>
@@ -89,7 +99,7 @@ const Headers: React.FC = () => {
           {/* Desktop Menu (displayed on larger screens) */}
           {!isMobile ? (
             <Box>
-              {menuItems.map((m, index) => (
+              {menuItems.filter(m => m.show && (!['Register','Login'].includes(m.name))).map((m, index) => (
                 <Button
                   key={index}
                   sx={{ color: "black", fontWeight: "600", ml: 2 }}
@@ -98,17 +108,28 @@ const Headers: React.FC = () => {
                   {m.name}
                 </Button>
               ))}
+              {!isAuthenticated() &&
+                <>
+                  <Button className="gradient-button"
+                    sx={{ borderRadius: "20px", color: "white", fontWeight: "600", ml: 2 }}
+                    onClick={() => onMenuClicked("/register")} >
+                    Register
+                  </Button>
+                  <Button className="gradient-button"
+                    sx={{ borderRadius: "20px", color: "white", fontWeight: "600", ml: 2 }}
+                    onClick={() => onMenuClicked("/login")} >
+                    Login
+                  </Button>
+                </>
+              }
+              {isAuthenticated() &&
+                <Button className="gradient-button"
+                  sx={{ borderRadius: "20px", color: "white", fontWeight: "600", ml: 2 }}
+                  onClick={() => { logout(); onMenuClicked("/login") }} >
+                  Logout
+                </Button>
+              }
 
-              <Button className="gradient-button" 
-                sx={{ borderRadius: "20px", color: "white", fontWeight: "600", ml: 2 }}
-                onClick={() => onMenuClicked("/register")} >
-                Register
-              </Button>
-              <Button className="gradient-button" 
-                sx={{ borderRadius: "20px", color: "white", fontWeight: "600", ml: 2 }}
-                onClick={() => onMenuClicked("/login")} >
-                Login
-              </Button>
             </Box>
           ) : (
             // Hamburger Menu (displayed on mobile screens)

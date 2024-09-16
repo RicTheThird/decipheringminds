@@ -30,6 +30,17 @@ public class Startup
 
         services.AddControllers();
 
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll",
+                builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+        });
+
         var key = Encoding.ASCII.GetBytes(Configuration["Jwt:Secret"]);
         services.AddAuthentication(x =>
         {
@@ -74,6 +85,9 @@ public class Startup
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseRouting();
+
+        app.UseCors("AllowAll");
+
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseEndpoints(endpoints =>

@@ -1,17 +1,31 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Card, CardContent, Grid, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import QuestionnaireForm from "./questionnaire-form";
 import { Questionnaires } from "../constants/questionnaires";
+import { getMyUserTest } from "../services/apiService";
 
 const Questionnaire: React.FC = () => {
-
   const [activeQuestion, setActiveQuestion] = useState("");
+  const [testTaken, setTestTaken] = useState<any>(null);
+
+  useEffect(() => {
+    getMyTestTaken();
+  }, []);
+
+  const getMyTestTaken = async () => {
+    const response = await getMyUserTest()
+    if (response && response.length) {
+      setTestTaken(response);
+    }
+    console.log(response)
+  };
+
 
   return (
     <div>
-      { !activeQuestion && (
+      {!activeQuestion && (
         <>
           <Typography variant="h4" gutterBottom>
             Questionnaire
@@ -43,6 +57,7 @@ const Questionnaire: React.FC = () => {
                       >
                         {item.description}
                       </Typography>
+                      {/* //{!testTaken?.some(s => s.testId === item.id) && */}
                         <Button
                           sx={{
                             marginTop: "15px",
@@ -50,10 +65,16 @@ const Questionnaire: React.FC = () => {
                             color: "black",
                             fontWeight: "600",
                           }}
-                          onClick={() => setActiveQuestion(item.id) }
+                          onClick={() => setActiveQuestion(item.id)}
                         >
                           Proceed
                         </Button>
+                      {/* } */}
+                      {/* {testTaken?.some(s => s.testId === item.id) &&
+                        <Typography variant="h6" sx={{ marginTop: "10px" }}>
+                          Completed
+                        </Typography>
+                      } */}
                     </CardContent>
                   </Card>
                 </Grid>
@@ -63,7 +84,7 @@ const Questionnaire: React.FC = () => {
         </>
       )}
       {
-        activeQuestion && <QuestionnaireForm qformId={activeQuestion} setActiveQuestion={setActiveQuestion} />
+        activeQuestion && <QuestionnaireForm qformId={activeQuestion} setActiveQuestion={setActiveQuestion} getMyTestTaken={getMyTestTaken} />
       }
     </div>
   );

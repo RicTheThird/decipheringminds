@@ -1,4 +1,6 @@
-﻿namespace DecipheringMinds.BackEnd.Models
+﻿using System.Text.Json.Serialization;
+
+namespace DecipheringMinds.BackEnd.Models
 {
     public class ApplicationUser
     {
@@ -8,8 +10,16 @@
         public string Gender { get; set; }
         public string PasswordHash { get; set; }
         public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Role { get; set; } = "Customer";
+
+        [JsonIgnore]
+        public string? PhoneNumber { get; set; }
+
+        [JsonIgnore]
+        public string? Role { get; set; } = "Customer";
+
+        [JsonIgnore]
+        public bool? EmailVerified { get; set; }
+
         public DateTime BirthDate { get; set; }
     }
 }

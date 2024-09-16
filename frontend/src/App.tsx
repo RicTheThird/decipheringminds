@@ -17,7 +17,8 @@ import Questionnaire from "./components/questionnaire";
 import Diagnostic from "./components/diagnostic";
 import PyschReport from "./components/psych-report";
 import BookingCalendar from "./components/calendar";
-import QuestionnaireForm from "./components/questionnaire-form";
+import CalendarAdmin from "./components/calendar-admin";
+import PsychResult from "./components/psych-results";
 
 const App: React.FC = () => {
   return (
@@ -48,12 +49,15 @@ const MainRoutes: React.FC = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
         {/* Main Dashboard Route with Child Routes */}
-        <Route path="/dashboard/*" element={<Dashboard />}>
+        <Route path="/dashboard" element={<Dashboard />}>
+          {/* <Route path="/dashboard/*" element={<Dashboard />}> */}
           <Route path="home" element={<DashboardHome />} />
           <Route path="questionnaire" element={<Questionnaire />} />
           <Route path="diagnostic" element={<Diagnostic />} />
           <Route path="psych-report" element={<PyschReport />} />
+          <Route path="psych-result" element={<PsychResult />} />
           <Route path="calendar" element={<BookingCalendar />} />
+          <Route path="admin-calendar" element={<CalendarAdmin />} />
           <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>

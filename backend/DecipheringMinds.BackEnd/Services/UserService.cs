@@ -15,13 +15,22 @@ namespace DecipheringMinds.BackEnd.Services
 
         public async Task<ApplicationUser> Authenticate(string userName, string password)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.Email == userName);
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.EmailVerified == true && x.Email == userName);
             if (user == null) return null;
 
             if (VerifyPassword(password, user.PasswordHash))
                 return user;
 
             return null;
+        }
+
+        public async Task<Result> ConfirmEmail(string email)
+        {
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.Email == email);
+            if (user == null) return Result.Error();
+            user.EmailVerified = true;
+            await _context.SaveChangesAsync();
+            return Result.Success();
         }
 
         public async Task<Result> Register(ApplicationUser appUser)

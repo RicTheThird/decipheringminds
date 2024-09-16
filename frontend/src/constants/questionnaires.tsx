@@ -4,7 +4,29 @@ export const Questionnaires = [
     title: "Generalized Anxiety Disorder Scale",
     subHeader: "Over the last 2 weeks, how often have you been bothered by any of the following problems?",
     description: "Thank you for considering our anxiety assessment. It's a valuable tool to help understand your feelings and experiences. By taking this assessment, you're taking a proactive step towards self-awareness and potential support. Remember, your privacy is our priority, and your results will be kept confidential. Take your time, and if you have any questions or concerns, feel free to reach out to us. We're here to help.",
-    
+    scoreRange: [
+      {
+        start: 0,
+        end: 4,
+        value: "Minimal Anxiety"
+      },
+      {
+        start: 5,
+        end: 9,
+        value: "Mild Anxiety"
+      },
+      {
+        start: 10,
+        end: 14,
+        value: "Moderate Anxiety"
+      },
+      {
+        start: 15,
+        end: 21,
+        value: "Severe Anxiety"
+      }
+    ],
+    scoreDescription: "Anxiety Severity",
     scales: [
       {
         rate: 0,
@@ -39,6 +61,34 @@ export const Questionnaires = [
     title: "Patient Health Questionnaire",
     subHeader: "Over the last 2 weeks, how often have you been bothered by any of the following problems?",
     description:  "Thank you for considering our depression assessment. Your privacy is important, and your results will remain confidential. If you have any questions, we're here to help",
+    scoreRange: [
+      {
+        start: 0,
+        end: 4,
+        value: "Minimal Depression"
+      },
+      {
+        start: 5,
+        end: 9,
+        value: "Mild Depression"
+      },
+      {
+        start: 10,
+        end: 14,
+        value: "Moderate Depression"
+      },
+      {
+        start: 15,
+        end: 19,
+        value: "Moderate Severe Depression"
+      },
+      {
+        start: 20,
+        end: 27,
+        value: "Severe Depression"
+      }
+    ],
+    scoreDescription: "Depression Severity",
     scales: [
       {
         rate: 0,
@@ -165,6 +215,24 @@ export const Questionnaires = [
   {
     id: "PSS",
     title: "Perceived Stress Scale",
+    scoreRange: [
+      {
+        start: 0,
+        end: 13,
+        value: "Low Stress"
+      },
+      {
+        start: 14,
+        end: 26,
+        value: "Moderate Stress"
+      },
+      {
+        start: 27,
+        end: 40,
+        value: "High Perceived Stress"
+      }
+    ],
+    scoreDescription: "Stress Severity",
     scales: [
       {
         rate: 0,
@@ -204,6 +272,29 @@ export const Questionnaires = [
   {
     id: "PSWQ",
     title: "The Penn State Worry Questionnaire",
+    scoreRange: [
+      {
+        start: 0,
+        end: 29,
+        value: "Not anxious or a worrier"
+      },
+      {
+        start: 30,
+        end: 52,
+        value: "Bothered by worries but below clinical range for worry"
+      },
+      {
+        start: 53,
+        end: 65,
+        value: "Currently have some problems with worry and may benefit from treatment"
+      },
+      {
+        start: 66,
+        end: 80,
+        value: "Chronic worrier and in need of treatment to target this problem"
+      }
+    ],
+    scoreDescription: "Levels of Trait Worry",
     scales: [
       {
         rate: 1,
@@ -211,15 +302,15 @@ export const Questionnaires = [
       },
       {
         rate: 2,
-        description: "",
+        description: "Rarely typical of me",
       },
       {
         rate: 3,
-        description: "",
+        description: "Somewhat typical of me",
       },
       {
         rate: 4,
-        description: "",
+        description: "Often typical of me",
       },
       {
         rate: 5,
@@ -248,6 +339,29 @@ export const Questionnaires = [
   {
     id: "HRSA",
     title: "Hamilton Rating Scale for Anxiety",
+    scoreRange: [
+      {
+        start: 0,
+        end: 17,
+        value: "Mild Anxiety"
+      },
+      {
+        start: 18,
+        end: 24,
+        value: "Mild to Moderate Anxiety"
+      },
+      {
+        start: 25,
+        end: 30,
+        value: "Moderate to Severe Anxiety"
+      },
+      {
+        start: 31,
+        end: 56,
+        value: "Severe Anxiety"
+      }
+    ],
+    scoreDescription: "Anxiety Severity",
     scales: [
       {
         rate: 0,

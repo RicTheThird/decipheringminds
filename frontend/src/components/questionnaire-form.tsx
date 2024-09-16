@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -16,19 +16,57 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { Questionnaires } from "../constants/questionnaires";
+import { postUserTest } from "../services/apiService";
 
 interface ChildProps {
   qformId: string;
   setActiveQuestion: (qformId: string) => void;
+  getMyTestTaken: () => void;
 }
 
 const QuestionnaireForm: React.FC<ChildProps> = ({
   qformId,
   setActiveQuestion,
+  getMyTestTaken
 }) => {
-  //const { qformId } = useParams<{ qformId: string }>();
 
+  const [answers, setAnswers] = useState({});
   const questionnairesItem = Questionnaires.find((f) => f.id === qformId);
+  // Handle change event for radio buttons
+  const handleAnswerChange = (questionIndex: number, rate: number) => {
+    setAnswers(prevAnswers => ({
+      ...prevAnswers,
+      [questionIndex]: rate,
+    }));
+
+    console.log(answers)
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    console.log(JSON.stringify(answers));
+    if (questionnairesItem?.id !== "DASS") {
+      const sumScore = Object.values(answers).reduce((acc: any, curr) => acc + curr, 0) as number;
+      const interpretation = questionnairesItem?.scoreRange?.find(q => q.start <= sumScore && q.end >= sumScore);
+
+      console.log(questionnairesItem?.id + " = " + sumScore + " : " + interpretation?.value)
+
+      const request = {
+        testId: questionnairesItem?.id,
+        userTestScores: [
+          {
+            scoreType: questionnairesItem?.scoreDescription,
+            score: sumScore,
+            scoreInterpretation: interpretation?.value
+          }
+        ]
+      }
+      await postUserTest(request);
+      getMyTestTaken()
+      setActiveQuestion("")
+    }
+  };
+
 
   return (
     <Container maxWidth="md">
@@ -39,51 +77,54 @@ const QuestionnaireForm: React.FC<ChildProps> = ({
         {questionnairesItem?.subHeader}
       </Typography>
       <Box mt={4}>
-        {questionnairesItem?.questions.map((item, index) => (
-          <Card sx={{ marginBottom: "20px" }}>
-            <CardContent>
-              <FormControl
-                key={index}
-                component="fieldset"
-                margin="normal"
-                fullWidth
-              >
-                <Typography variant="h6" gutterBottom>
-                  {item}
-                </Typography>
-                <RadioGroup
-                  row
-                  // value={answers[item.id] ?? ''}
-                  // onChange={(e) => handleAnswerChange(item.id, parseInt(e.target.value))}
+        <form onSubmit={handleSubmit}>
+          {questionnairesItem?.questions.map((item, index) => (
+            <Card key={index} sx={{ marginBottom: "20px" }}>
+              <CardContent>
+                <FormControl
+                  key={index}
+                  component="fieldset"
+                  margin="normal"
+                  fullWidth
                 >
-                  {questionnairesItem?.scales.map((scale, index) => (
-                    <FormControlLabel
-                      key={index}
-                      value={scale.rate}
-                      control={<Radio />}
-                      label={scale.description}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            </CardContent>
-          </Card>
-        ))}
+                  <Typography variant="h6" gutterBottom>
+                    {item}
+                  </Typography>
+                  <RadioGroup
+                    row
+                    value={answers[index] === undefined ? '' : answers[index] === 0 ? 0 : answers[index]}
+                    onChange={(e) => handleAnswerChange(index, Number(e.target.value))}
+                  >
+                    {questionnairesItem?.scales.map((scale, index) => (
+                      <FormControlLabel
+                        required
+                        key={index}
+                        value={scale.rate}
+                        control={<Radio />}
+                        label={scale.description}
+                      />
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+              </CardContent>
+            </Card>
+          ))}
 
-        <Box mt={3}>
-          <Button
-            sx={{ marginRight: "10px" }}
-            type="submit"
-            variant="contained"
-            color="warning"
-            onClick={() => setActiveQuestion("")}
-          >
-            Back
-          </Button>
-          <Button type="submit" variant="contained" color="primary">
-            Submit
-          </Button>
-        </Box>
+          <Box mt={3}>
+            <Button
+              sx={{ marginRight: "10px" }}
+              type="button"
+              variant="contained"
+              color="warning"
+              onClick={() => setActiveQuestion("")}
+            >
+              Back
+            </Button>
+            <Button type="submit" variant="contained" color="primary">
+              Submit
+            </Button>
+          </Box>
+        </form>
       </Box>
     </Container>
   );

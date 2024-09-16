@@ -1,5 +1,5 @@
 // src/components/Login.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -12,14 +12,29 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { confirmEmail, register } from "../services/authService";
 
 const Register: React.FC = () => {
-  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') || '';
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  useEffect(() => {
+    // Function to fetch data
+    const confirmEmailAsync = async () => {
+      try {
+        await confirmEmail(token)
+      } catch (error) {
+        setError("Invalid token");
+      }
+    };
+
+    if (token) confirmEmailAsync();
+  }, []);
 
   const [formValues, setFormValues] = useState({
     firstName: "",
@@ -27,8 +42,10 @@ const Register: React.FC = () => {
     birthDate: null,
     gender: "",
     email: "",
-    password: "",
+    passwordHash: "",
   });
+
+  const [error, setError] = useState('');
 
   const [isSubmitted, setSubmitted] = useState(false);
 
@@ -46,11 +63,15 @@ const Register: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission, validation, etc.
-    setSubmitted(true);
     console.log(formValues);
+    try {
+      await register(formValues);
+      setSubmitted(true);
+    } catch (e) {
+      setError('Failed to register. Please try again later.')
+    }
   };
 
   return (
@@ -81,17 +102,31 @@ const Register: React.FC = () => {
           />
         </Box>
 
-        <Typography
-          variant="h4"
-          className="gradient-text"
-          style={{ fontWeight: 700 }}
-          gutterBottom
-        >
-          DecipheringMinds
-        </Typography>
-        {isSubmitted && (
+
+
+        {error &&
+          <Typography variant="h5" color="error">
+            {error}
+          </Typography>
+        }
+        {token && !error && (
           <>
-            <Typography variant="h5" component="div" gutterBottom>
+            <Typography variant="h5" className="gradient-text"
+              style={{ fontWeight: 700 }} gutterBottom>
+              Email successfully verified
+            </Typography>
+
+            {/* Confirmation Message */}
+            <Typography variant="body1" color="textSecondary" gutterBottom>
+              Thank you! You can now login <Link href="/login" underline="hover">here
+                </Link>
+            </Typography>
+          </>
+        )}
+        {isSubmitted && !token && (
+          <>
+            <Typography variant="h5" className="gradient-text"
+              style={{ fontWeight: 700 }} gutterBottom>
               Registration Successful!
             </Typography>
 
@@ -102,136 +137,147 @@ const Register: React.FC = () => {
             </Typography>
           </>
         )}
-        {!isSubmitted && (
-          <form onSubmit={handleSubmit}>
-            <Grid container spacing={3} paddingTop={5}>
-              {/* First Name */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="First Name"
-                  name="firstName"
-                  value={formValues.firstName}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
-                  required
-                />
-              </Grid>
 
-              {/* Last Name */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Last Name"
-                  name="lastName"
-                  value={formValues.lastName}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
-                  required
-                />
-              </Grid>
-
-              {/* Birth Date */}
-              <Grid item xs={12} sm={6}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label="Birth Date"
-                    value={formValues.birthDate}
-                    onChange={handleDateChange}
-                    slots={{
-                      textField: (textFieldProps) => (
-                        <TextField fullWidth required {...textFieldProps} />
-                      ),
-                    }}
-                    //slots={(params) => <TextField {...params} fullWidth required />}
-                  />
-                </LocalizationProvider>
-              </Grid>
-
-              {/* Gender */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Gender"
-                  name="gender"
-                  value={formValues.gender}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
-                  select
-                  sx={{ textAlign: "left" }}
-                  required
-                >
-                  <MenuItem value="male">Male</MenuItem>
-                  <MenuItem value="female">Female</MenuItem>
-                  <MenuItem value="other">Other</MenuItem>
-                </TextField>
-              </Grid>
-
-              {/* Email */}
-              <Grid item xs={12}>
-                <TextField
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={formValues.email}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
-                  required
-                />
-              </Grid>
-
-              {/* Password */}
-              <Grid item xs={12}>
-                <TextField
-                  label="Password"
-                  name="password"
-                  type="password"
-                  value={formValues.password}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
-                  required
-                />
-              </Grid>
-
-              {/* Confirm Password */}
-              <Grid item xs={12}>
-                <TextField
-                  label="Confirm Password"
-                  name="confirm-password"
-                  type="password"
-                  value={formValues.password}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
-                  required
-                />
-              </Grid>
-
-              {/* Submit Button */}
-              <Grid item xs={12}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  //onClick={handleSubmit}
-                >
-                  Register
-                </Button>
-              </Grid>
-            </Grid>
-          </form>
-        )}
-        <Box mt={2}>
-          <Typography variant="body2">
-            Already have an account?{" "}
-            <Link href="/login" underline="hover">
-              Login here
-            </Link>
+        {!isSubmitted && !token && (
+          <><Typography
+            variant="h4"
+            className="gradient-text"
+            style={{ fontWeight: 700 }}
+            gutterBottom
+          >
+            DecipheringMinds
           </Typography>
-        </Box>
+            <form onSubmit={handleSubmit}>
+              <Grid container spacing={3} paddingTop={5}>
+                {/* First Name */}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="First Name"
+                    name="firstName"
+                    value={formValues.firstName}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+
+                {/* Last Name */}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Last Name"
+                    name="lastName"
+                    value={formValues.lastName}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+
+                {/* Birth Date */}
+                <Grid item xs={12} sm={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Birth Date"
+                      value={formValues.birthDate}
+                      onChange={handleDateChange}
+                      slots={{
+                        textField: (textFieldProps) => (
+                          <TextField fullWidth required {...textFieldProps} />
+                        ),
+                      }}
+                    //slots={(params) => <TextField {...params} fullWidth required />}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+
+                {/* Gender */}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Gender"
+                    name="gender"
+                    value={formValues.gender}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    fullWidth
+                    select
+                    sx={{ textAlign: "left" }}
+                    required
+                  >
+                    <MenuItem value="male">Male</MenuItem>
+                    <MenuItem value="female">Female</MenuItem>
+                    <MenuItem value="other">Other</MenuItem>
+                  </TextField>
+                </Grid>
+
+                {/* Email */}
+                <Grid item xs={12}>
+                  <TextField
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={formValues.email}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+
+                {/* Password */}
+                <Grid item xs={12}>
+                  <TextField
+                    label="Password"
+                    name="passwordHash"
+                    type="password"
+                    value={formValues.passwordHash}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+
+                {/* Confirm Password */}
+                <Grid item xs={12}>
+                  <TextField
+                    label="Confirm Password"
+                    name="passwordHash"
+                    type="password"
+                    value={formValues.passwordHash}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+
+                {/* Submit Button */}
+                <Grid item xs={12}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                  //onClick={handleSubmit}
+                  >
+                    Register
+                  </Button>
+                </Grid>
+              </Grid>
+            </form>
+            <Box mt={2}>
+              <Typography variant="body2">
+                Already have an account?{" "}
+                <Link href="/login" underline="hover">
+                  Login here
+                </Link>
+              </Typography>
+            </Box>
+          </>
+        )}
+
       </Box>
     </Container>
   );

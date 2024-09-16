@@ -8,5 +8,7 @@ namespace DecipheringMinds.BackEnd.Services
         Task<ApplicationUser> Authenticate(string userName, string password);
 
         Task<Result> Register(ApplicationUser appUser);
+
+        Task<Result> ConfirmEmail(string email);
     }
 }

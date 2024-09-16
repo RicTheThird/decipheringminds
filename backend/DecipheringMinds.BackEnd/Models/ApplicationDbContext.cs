@@ -8,6 +8,12 @@ namespace DecipheringMinds.BackEnd.Models
             : base(options) { }
 
         public DbSet<ApplicationUser> Users { get; set; }
+        public DbSet<Appointments> Appointments { get; set; }
+        public DbSet<UserTests> UserTests { get; set; }
+        public DbSet<UserTestScores> UserTestScores { get; set; }
+        public DbSet<PsychNotes> PsychNotes { get; set; }
+        public DbSet<Notifications> Notifications { get; set; }
+        public DbSet<Feedbacks> Feedbacks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -17,6 +23,14 @@ namespace DecipheringMinds.BackEnd.Models
             modelBuilder.Entity<ApplicationUser>()
                 .ToTable("Users") // Map to the table name in the database
                 .HasKey(u => u.Id); // Set the primary key
+
+            //modelBuilder.Entity<Appointments>()
+            //    .ToTable("Appointments") // Map to the table name in the database
+            //    .HasKey(u => u.Id); // Set the primary key
+
+            //modelBuilder.Entity<UserTests>()
+            //    .ToTable("UserTests")
+            //    .HasMany(u => u.UserScores);
         }
     }
 }
