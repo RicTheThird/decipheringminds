@@ -26,7 +26,7 @@ const PsychResult: React.FC = () => {
                 Result
             </Typography>
             <Grid container spacing={3}>
-                {testResults.map(t => (
+                {testResults.filter(t => t.isSubmitted).map(t => (
                     <Grid key={t.id} item xs={12} md={6}>
                         <Card>
                             <CardHeader
@@ -35,17 +35,20 @@ const PsychResult: React.FC = () => {
                                 sx={{ backgroundColor: 'darkgrey', color: 'white' }}
                             />
                             <CardContent>
-                                {t.userTestScores.map(tu => (
+                                {t.userTestScores.filter(u => u.isPublished).map(tu => (
                                     <Box key={tu.id} my={2} p={2} border={1} borderRadius={1}>
                                         <Typography variant="h5">Interpretation: {tu.scoreInterpretation}</Typography>
                                         <Typography variant="h6">Score: {tu.score}</Typography>
                                         <Typography variant="h6">Test Taken: {dayjs(t.createdAt).format('YYYY-MM-DD hh:mm A')}</Typography>
                                     </Box>
                                 ))}
-
-                                <Button variant="contained" color="primary" onClick={() => navigate('/dashboard/calendar')} >
+                                {
+                                    t.userTestScores.filter(u => !u.isPublished).length === t.userTestScores.length
+                                    && <Typography color='warning' variant="body1">Not yet available</Typography>
+                                }
+                                {/* <Button variant="contained" color="primary" onClick={() => navigate('/dashboard/calendar')} >
                                     Book Appointment
-                                </Button>
+                                </Button> */}
                             </CardContent>
 
                         </Card>

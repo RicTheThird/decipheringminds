@@ -35,7 +35,7 @@ namespace DecipheringMinds.BackEnd.Services
             mailMessage.To.Add(toEmail);
 
             var mimeMessage = new MimeKit.MimeMessage();
-            mimeMessage.From.Add(new MimeKit.MailboxAddress("Your Name", "ricthethird20@gmail.com"));
+            mimeMessage.From.Add(new MimeKit.MailboxAddress("Admin", "decipheringminds@gmail.com"));
             mimeMessage.To.Add(new MimeKit.MailboxAddress(toName, toEmail));
             mimeMessage.Subject = subject;
             mimeMessage.Body = new MimeKit.TextPart("Html") { Text = body };

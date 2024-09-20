@@ -1,4 +1,6 @@
 import { useJwt as decodeJwt } from "react-jwt"
+
+import { KJUR } from 'jsrsasign'
 import axiosInstance from './axiosInstance';
 
 export interface UserProfile {
@@ -55,3 +57,24 @@ export const getUserProfile = () => {
 export const getToken = () => {
     return localStorage.getItem('authToken');
 };
+
+export const getMeetingSignature = (meetingNumber, role, expirationSeconds) => {
+    const iat = Math.floor(Date.now() / 1000)
+    const exp = expirationSeconds ? iat + expirationSeconds : iat + 60 * 60 * 2
+    const oHeader = { alg: 'HS256', typ: 'JWT' }
+
+    const oPayload = {
+        sdkKey: "MGJ749hdTHJqnAnzsyT4g",
+        appKey: "MGJ749hdTHJqnAnzsyT4g",
+        mn: meetingNumber,
+        role,
+        iat,
+        exp,
+        tokenExp: exp
+    }
+
+    const sHeader = JSON.stringify(oHeader)
+    const sPayload = JSON.stringify(oPayload)
+    const sdkJWT = KJUR.jws.JWS.sign('HS256', sHeader, sPayload, "G4ejgMwF3ldIm8HUGJyghroVUOrDHO3K")
+    return  sdkJWT 
+}

@@ -10,6 +10,7 @@ namespace DecipheringMinds.BackEnd.Models
         public string ScoreType { get; set; }
         public string ScoreInterpretation { get; set; }
         public int Score { get; set; }
+        public bool IsPublished { get; set; }
 
         [JsonIgnore]
         [ForeignKey("TestId")]

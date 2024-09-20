@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Box, FormControl, InputLabel, Select, CardHeader } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { useNavigate } from 'react-router-dom';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { getMyAppointment, postUserAppointment, updateUserAppointmentStatus } from '../services/apiService';
+import { getUserProfile } from '../services/authService';
 
 const generateTimeRanges = (startHour, endHour) => {
   const timeRanges: string[] = [];
@@ -16,10 +18,14 @@ const generateTimeRanges = (startHour, endHour) => {
 };
 
 const BookingPage = () => {
+  const navigate = useNavigate();
   const [dateTime, setDateTime] = useState(dayjs());
   const [description, setDescription] = useState('');
   const [selectedTimeRange, setSelectedTimeRange] = useState('');
   const [userAppointments, setUserAppointments] = useState<any[]>([])
+  //const [profile, setUserProfile] = useState<any>(null)
+
+  const profile = getUserProfile();
 
   useEffect(() => {
     setAppointments();
@@ -44,11 +50,12 @@ const BookingPage = () => {
     e.preventDefault();
     setDescription('');
     setSelectedTimeRange('')
-
+    const startTime = selectedTimeRange.split('-')[0].split(':')[0];
     const request = {
-      bookedDate: dateTime,
+      bookedDate: dayjs(`${dateTime.format("YYYY-MM-DD")}T${startTime}:00:00`).format("YYYY-MM-DDTHH:mm:ss"),
       bookedType: description,
-      startTime: Number(selectedTimeRange.split('-')[0].split(':')[0]),
+      bookedLocation: 'Online',
+      startTime: Number(startTime),
       endTime: Number(selectedTimeRange.split('-')[1].split(':')[0])
     }
     await postUserAppointment(request);
@@ -88,12 +95,22 @@ const BookingPage = () => {
                       <Grid item xs={6} sm={6}>
                         <Typography textAlign="right" color="textSecondary">Time: {b.startTime}:00 - {b.endTime}:00 </Typography>
                       </Grid>
-                    </Grid>
-                    <Button fullWidth variant="contained" type="button" color="warning"
-                      onClick={() => updateAppointmentStatus('Cancelled', b.id)}>
-                      Cancel this appointment
-                    </Button>
 
+                      <Grid item xs={12} sm={6}>
+                        <Button fullWidth variant="contained" type="button" color="warning"
+                          onClick={() => updateAppointmentStatus('Cancelled', b.id)}>
+                          Cancel this appointment
+                        </Button>
+                      </Grid>
+                      { b.bookedLocation === 'Online' &&
+                        <Grid item xs={12} sm={6}>
+                          <Button fullWidth variant="contained" type="button" color="primary"
+                            onClick={() => navigate(`/dashboard/meeting?meetingNumber=${b.meetingNumber}&meetingPassword=${b.meetingPassword}&email=${profile?.email}&name=${profile?.name}&role=0`)}>
+                            Join Meeting
+                          </Button>
+                        </Grid>
+                      }
+                    </Grid>
                   </Box>
                 ))}
                 {(!userAppointments || !userAppointments.some(u => ['Pending Confirmation', 'Confirmed'].includes(u.status) && !dayjs(u.bookedDate).isBefore(dayjs()))) &&
@@ -176,7 +193,7 @@ const BookingPage = () => {
                 </Grid>
                 <Grid item xs={12} sm={12}>
                   <TextField
-                    label="Appointment Purpose"
+                    label="Topic / Agenda"
                     required
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}

@@ -16,22 +16,22 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { Questionnaires } from "../constants/questionnaires";
-import { postUserTest } from "../services/apiService";
+import { postUserScores, postUserTest } from "../services/apiService";
 
 interface ChildProps {
-  qformId: string;
-  setActiveQuestion: (qformId: string) => void;
+  activeQuestion: any;
+  setActiveQuestion: (question: any) => void;
   getMyTestTaken: () => void;
 }
 
 const QuestionnaireForm: React.FC<ChildProps> = ({
-  qformId,
+  activeQuestion,
   setActiveQuestion,
   getMyTestTaken
 }) => {
 
   const [answers, setAnswers] = useState({});
-  const questionnairesItem = Questionnaires.find((f) => f.id === qformId);
+  const questionnairesItem = Questionnaires.find((f) => f.id === activeQuestion.testId);
   // Handle change event for radio buttons
   const handleAnswerChange = (questionIndex: number, rate: number) => {
     setAnswers(prevAnswers => ({
@@ -48,22 +48,19 @@ const QuestionnaireForm: React.FC<ChildProps> = ({
     if (questionnairesItem?.id !== "DASS") {
       const sumScore = Object.values(answers).reduce((acc: any, curr) => acc + curr, 0) as number;
       const interpretation = questionnairesItem?.scoreRange?.find(q => q.start <= sumScore && q.end >= sumScore);
-
       console.log(questionnairesItem?.id + " = " + sumScore + " : " + interpretation?.value)
-
-      const request = {
-        testId: questionnairesItem?.id,
-        userTestScores: [
-          {
-            scoreType: questionnairesItem?.scoreDescription,
-            score: sumScore,
-            scoreInterpretation: interpretation?.value
-          }
-        ]
-      }
-      await postUserTest(request);
+      const request = [
+        {
+          testId: activeQuestion?.id,
+          scoreType: questionnairesItem?.scoreDescription,
+          score: sumScore,
+          scoreInterpretation: interpretation?.value,
+          isPublish: false,
+        }
+      ]
+      await postUserScores(activeQuestion?.id, request);
       getMyTestTaken()
-      setActiveQuestion("")
+      setActiveQuestion(null)
     }
   };
 
@@ -116,7 +113,7 @@ const QuestionnaireForm: React.FC<ChildProps> = ({
               type="button"
               variant="contained"
               color="warning"
-              onClick={() => setActiveQuestion("")}
+              onClick={() => setActiveQuestion(null)}
             >
               Back
             </Button>

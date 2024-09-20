@@ -62,9 +62,12 @@ public class Startup
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+        services.AddMemoryCache();
+        services.AddHttpClient();
 
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IZoomApiService, ZoomApiService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

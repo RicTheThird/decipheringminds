@@ -1,5 +1,6 @@
 ﻿using DecipheringMinds.BackEnd.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,6 +40,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         }
 
         // GET: api/UserTests/UserId/5
+        [Authorize]
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<UserTests>>> GetUserTestsByUserId(int userId)
         {
@@ -48,7 +50,7 @@ namespace DecipheringMinds.BackEnd.Controllers
 
             if (userTests == null)
             {
-                return NotFound();
+                return new List<UserTests>();
             }
 
             return userTests;
@@ -60,7 +62,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         {
             var userTests = await _context.UserTests
                 .Where(u => u.UserId == GetUserId() && !u.IsDeleted)
-                .Include(u => u.UserTestScores).ToListAsync();
+                .Include(u => u.UserTestScores).OrderByDescending(u => u.SubmittedAt).ToListAsync();
 
             if (userTests == null)
             {
@@ -101,42 +103,89 @@ namespace DecipheringMinds.BackEnd.Controllers
             return NoContent();
         }
 
+        [Authorize]
+        [HttpPut("score/{id}")]
+        public async Task<ActionResult<UserTests>> PostUserScore(int id, List<UserTestScores> userTestScores)
+        {
+            if (userTestScores != null && userTestScores.Any())
+            {
+                //delete existing
+                var existingScore = await _context.UserTestScores.Where(u => u.TestId == id).ToListAsync();
+                _context.UserTestScores.RemoveRange(existingScore);
+                await _context.SaveChangesAsync();
+
+                //save
+                var userScores = new List<UserTestScores>();
+                foreach (var score in userTestScores)
+                {
+                    userScores.Add(
+                        new UserTestScores
+                        {
+                            TestId = id,
+                            Score = score.Score,
+                            ScoreType = score.ScoreType,
+                            ScoreInterpretation = score.ScoreInterpretation,
+                            IsPublished = score.IsPublished,
+                        });
+                }
+                _context.UserTestScores.AddRange(userScores);
+
+                var userTests = await _context.UserTests.FindAsync(id);
+                userTests.IsSubmitted = true;
+                userTests.SubmittedAt = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+            return NoContent();
+        }
+
         // POST: api/UserTests
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<UserTests>> PostUserTests(UserTests userTests)
+        public async Task<ActionResult<UserTests>> PostUserTests(List<UserTests> userTests)
         {
-            var userTestModel = new UserTests
+            if (userTests != null && userTests.Any())
             {
-                UserId = GetUserId(),
-                TestId = userTests.TestId,
-                IsDeleted = false,
-                IsPublished = false,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.UserTests.Add(userTestModel);
-            await _context.SaveChangesAsync();
-
-            var userScores = new List<UserTestScores>();
-
-            foreach (var score in userTests.UserTestScores)
-            {
-                userScores.Add(
-                    new UserTestScores
+                foreach (var test in userTests)
+                {
+                    var userTestModel = new UserTests
                     {
-                        TestId = userTestModel.Id,
-                        Score = score.Score,
-                        ScoreType = score.ScoreType,
-                        ScoreInterpretation = score.ScoreInterpretation
-                    });
+                        UserId = test.UserId,
+                        TestId = test.TestId,
+                        IsDeleted = false,
+                        IsSubmitted = false,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    _context.UserTests.Add(userTestModel);
+                    await _context.SaveChangesAsync();
+
+                    if (test.UserTestScores != null && test.UserTestScores.Any())
+                    {
+                        var userScores = new List<UserTestScores>();
+                        foreach (var score in test.UserTestScores)
+                        {
+                            userScores.Add(
+                                new UserTestScores
+                                {
+                                    TestId = userTestModel.Id,
+                                    Score = score.Score,
+                                    ScoreType = score.ScoreType,
+                                    ScoreInterpretation = score.ScoreInterpretation
+                                });
+                        }
+                        _context.UserTestScores.AddRange(userScores);
+                        await _context.SaveChangesAsync();
+                    }
+                }
             }
 
-            _context.UserTestScores.AddRange(userScores);
-
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetUserTests", new { id = userTestModel.Id }, userTestModel);
+            return Created();
         }
 
         // DELETE: api/UserTests/5

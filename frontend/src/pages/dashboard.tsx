@@ -48,16 +48,37 @@ const Dashboard: React.FC = () => {
 
       {/* Menu List */}
       <List>
-        {/* Dashboard */}
         <ListItem component={Link} to="home">
           <ListItemIcon>
             <DashboardIcon />
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
+        
+        {profile?.role === 'Admin' &&
+          <ListItem component={Link} to="patient">
+            <ListItemIcon>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText primary="Patients" />
+          </ListItem>
+        }
+
+        {profile?.role === 'Admin' &&
+          <ListItem component={Link} to="questionnaire">
+            <ListItemIcon>
+              <img
+                src="/questionnaire.png"
+                alt="Questionnaire"
+                style={{ width: '30px', height: '30px', borderRadius: '50%' }}
+              />
+            </ListItemIcon>
+            <ListItemText primary="Questionnaire" />
+          </ListItem>
+        }
 
         {profile?.role === 'Customer' &&
-          <ListItem component={Link} to="questionnaire">
+          <ListItem component={Link} to="questionnaire-user">
             <ListItemIcon>
               <img
                 src="/questionnaire.png"

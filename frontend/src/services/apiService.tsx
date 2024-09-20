@@ -6,11 +6,21 @@ export const postUserTest = async (data: any) => {
     return response.data;
 };
 
+export const postUserScores = async (testId: number, data: any) => {
+    const response = await axiosInstance.put(`/usertests/score/${testId}`, data);
+    return response.data;
+};
+
+
 export const getMyUserTest = async () => {
     const response = await axiosInstance.get('/usertests/my');
     return response.data;
 };
 
+export const getUserTest = async (id: number) => {
+    const response = await axiosInstance.get(`/usertests/user/${id}`);
+    return response.data;
+};
 export const postUserAppointment = async (data: any) => {
     const response = await axiosInstance.post('/appointments', data);
     return response.data;
@@ -26,7 +36,22 @@ export const getMyAppointment = async () => {
     return response.data;
 };
 
+export const getUserAppointment = async (userId: number) => {
+    const response = await axiosInstance.get(`/appointments/user/${userId}`);
+    return response.data;
+};
+
 export const getActiveAppointment = async () => {
     const response = await axiosInstance.get('/appointments');
     return response.data;
 };
+
+export const getAllPatients = async () => {
+    const response = await axiosInstance.get('/users');
+    return response.data;
+}
+
+export const getUserById = async (userId: number) => {
+    const response = await axiosInstance.get(`/users/${userId}`);
+    return response.data;
+}

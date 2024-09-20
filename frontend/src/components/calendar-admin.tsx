@@ -4,10 +4,13 @@ import { Calendar, dayjsLocalizer } from 'react-big-calendar'
 import dayjs from 'dayjs'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { getActiveAppointment, updateUserAppointmentStatus } from '../services/apiService';
-
+import { useNavigate } from 'react-router-dom';
 const localizer = dayjsLocalizer(dayjs)
+const adminEmail = 'decipheringminds@gmail.com';
+const adminName = 'Deciphering Minds';
 
 const CalendarAdmin: React.FC = () => {
+  const navigate = useNavigate();
   const [calendarEvents, setCalendarEvents] = useState<any[]>([])
   const [open, setOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -26,14 +29,18 @@ const CalendarAdmin: React.FC = () => {
     const response = await getActiveAppointment()
     if (response && response.length) {
       const _calendarEvents: any[] = []
-      response.forEach(e => {
+      response.filter(r => r.status === 'Confirmed').forEach(e => {
         const bookedDate = dayjs(e.bookedDate).format('YYYY-MM-DD');
         _calendarEvents.push({
           id: e.id,
           name: `${e.user.firstName} ${e.user.lastName}`,
+          userId: e.user.id,
           status: e.status,
           bookedDate: bookedDate,
           bookedType: e.bookedType,
+          bookedLocation: e.bookedLocation,
+          meetingNumber: e.meetingNumber,
+          meetingPassword: e.meetingPassword,
           time: `${e.startTime}:00 - ${e.endTime}:00`,
           title: `${e.user.firstName} ${e.user.lastName}    ${e.startTime}:00-${e.endTime}:00`,
           start: new Date(`${bookedDate}T${e.startTime}:00`),
@@ -87,6 +94,13 @@ const CalendarAdmin: React.FC = () => {
         <DialogActions>
           {selectedEvent?.status === 'Pending Confirmation' && <Button onClick={() => updateAppointmentStatus('Confirmed', selectedEvent.id)} color="success">
             Confirm Appointment
+          </Button>
+          }
+          {selectedEvent?.status === 'Confirmed' && selectedEvent?.bookedLocation === 'Online' 
+           && <Button color='primary' onClick={() => 
+            navigate(`/dashboard/meeting?userId=${selectedEvent?.userId}&meetingNumber=${selectedEvent?.meetingNumber}&meetingPassword=${selectedEvent?.meetingPassword}&email=${adminEmail}&name=${adminName}&role=1`)}>
+
+            Start Meeting
           </Button>
           }
           <Button onClick={() => updateAppointmentStatus('Cancelled', selectedEvent.id)} color="warning">

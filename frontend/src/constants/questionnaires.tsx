@@ -54,6 +54,7 @@ export const Questionnaires = [
       "Becoming easily annoyed or irritable",
       "Feeling afraid, as if something awful might happen",
     ],
+    selected: false,
     additionalQuestions: [],
   },
   {
@@ -106,7 +107,8 @@ export const Questionnaires = [
         rate: 3,
         description: "Nearly everyday",
       },
-    ],
+    ],    
+    selected: false,
     questions: [
       "Little interest or pleasure in doing things",
       "Feeling down, depressed, or hopeless",
@@ -148,6 +150,7 @@ export const Questionnaires = [
     title: "Depression, Anxiety and Stress Scale",
     subHeader: "Read each statement and select which indicates how much the statement applied to you over the past week. There are no right or wrong answers. Do not spend too much time on any statement.",
     description: "Thank you for considering our Depression, Anxiety, and Stress Scales assessment. Your privacy is important, and your results will remain confidential. If you have any questions, we're here to help",
+    selected: false,
     scales: [
       {
         rate: 0,
@@ -215,6 +218,7 @@ export const Questionnaires = [
   {
     id: "PSS",
     title: "Perceived Stress Scale",
+    selected: false,
     scoreRange: [
       {
         start: 0,
@@ -272,6 +276,7 @@ export const Questionnaires = [
   {
     id: "PSWQ",
     title: "The Penn State Worry Questionnaire",
+    selected: false,
     scoreRange: [
       {
         start: 0,
@@ -339,6 +344,7 @@ export const Questionnaires = [
   {
     id: "HRSA",
     title: "Hamilton Rating Scale for Anxiety",
+    selected: false,
     scoreRange: [
       {
         start: 0,

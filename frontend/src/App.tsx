@@ -19,6 +19,9 @@ import PyschReport from "./components/psych-report";
 import BookingCalendar from "./components/calendar";
 import CalendarAdmin from "./components/calendar-admin";
 import PsychResult from "./components/psych-results";
+import QuestionnairePatient from "./components/questionnaire-patient";
+import Patients from "./components/patients";
+import Meeting from "./components/meeting";
 
 const App: React.FC = () => {
   return (
@@ -53,12 +56,15 @@ const MainRoutes: React.FC = () => {
           {/* <Route path="/dashboard/*" element={<Dashboard />}> */}
           <Route path="home" element={<DashboardHome />} />
           <Route path="questionnaire" element={<Questionnaire />} />
+          <Route path="questionnaire-user" element={<QuestionnairePatient />} />
           <Route path="diagnostic" element={<Diagnostic />} />
           <Route path="psych-report" element={<PyschReport />} />
           <Route path="psych-result" element={<PsychResult />} />
           <Route path="calendar" element={<BookingCalendar />} />
           <Route path="admin-calendar" element={<CalendarAdmin />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="patient" element={<Patients />} />
+          <Route path="meeting" element={<Meeting />} />
         </Route>
       </Routes>
     </>

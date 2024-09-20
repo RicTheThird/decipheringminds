@@ -12,14 +12,17 @@ namespace DecipheringMinds.BackEnd.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
+        private readonly IZoomApiService _zoomApiService;
 
-        public AppointmentsController(ApplicationDbContext context, IEmailService emailService)
+        public AppointmentsController(ApplicationDbContext context, IEmailService emailService, IZoomApiService zoomApiService)
         {
             _emailService = emailService;
             _context = context;
+            _zoomApiService = zoomApiService;
         }
 
         // GET: api/Appointments
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Appointments>>> GetAppointments()
         {
@@ -27,6 +30,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         }
 
         // GET: api/Appointments/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Appointments>> GetAppointments(int id)
         {
@@ -41,11 +45,12 @@ namespace DecipheringMinds.BackEnd.Controllers
             return appointments;
         }
 
+        [Authorize]
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Appointments>>> GetAppointmentsByUserId(int userId)
         {
             var appointments = await _context.Appointments.Include(a => a.User)
-                .Where(a => a.UserId == userId).ToListAsync();
+                .Where(a => a.UserId == userId).OrderByDescending(a => a.BookedDate).ToListAsync();
 
             if (appointments == null)
             {
@@ -55,6 +60,7 @@ namespace DecipheringMinds.BackEnd.Controllers
             return appointments;
         }
 
+        [Authorize]
         [HttpGet("status/{status}")]
         public async Task<ActionResult<IEnumerable<Appointments>>> GetAppointmentsByStatus(string status)
         {
@@ -69,6 +75,7 @@ namespace DecipheringMinds.BackEnd.Controllers
             return appointments;
         }
 
+        [Authorize]
         [HttpPut("status/{status}/{id}")]
         public async Task<ActionResult<IEnumerable<Appointments>>> UpdateAppointmentByStatus(string status, int id)
         {
@@ -102,7 +109,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         }
 
         // PUT: api/Appointments/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAppointments(int id, Appointments appointments)
         {
@@ -137,9 +144,28 @@ namespace DecipheringMinds.BackEnd.Controllers
         [HttpPost]
         public async Task<ActionResult<Appointments>> PostAppointments(Appointments appointments)
         {
+            ZoomMeetingResponse zoomDetails = null;
+
+            if (appointments.BookedLocation == "Online")
+            {
+                zoomDetails = await _zoomApiService.GenerateZoomMeetingLink(appointments, GetUserEmail());
+                if (zoomDetails != null)
+                {
+                    appointments.HostEmail = zoomDetails.host_email;
+                    appointments.MeetingNumber = zoomDetails.id;
+                    appointments.MeetingJoinUrl = zoomDetails.join_url;
+                    appointments.MeetingStartUrl = zoomDetails.start_url;
+                    appointments.MeetingPassword = zoomDetails.password;
+                }
+                else
+                {
+                    return BadRequest("Unable to create meeting");
+                }
+            }
+
             appointments.UserId = GetUserId();
             appointments.CreatedAt = DateTime.Now;
-            appointments.Status = "Pending Confirmation";
+            appointments.Status = "Confirmed";
             _context.Appointments.Add(appointments);
             await _context.SaveChangesAsync();
 
