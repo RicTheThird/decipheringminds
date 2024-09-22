@@ -25,6 +25,9 @@ const PsychResult: React.FC = () => {
             <Typography variant="h4" gutterBottom>
                 Result
             </Typography>
+            {!testResults || testResults.length === 0 &&
+                <Typography variant="body1" paddingTop={5}>No questionnaire result available</Typography>
+            }
             <Grid container spacing={3}>
                 {testResults.filter(t => t.isSubmitted).map(t => (
                     <Grid key={t.id} item xs={12} md={6}>

@@ -9,6 +9,7 @@ import {
   Container,
   Grid,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -22,7 +23,7 @@ const Register: React.FC = () => {
   const token = searchParams.get('token') || '';
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const [loading, setLoading] = useState(false); // Loading state
   useEffect(() => {
     // Function to fetch data
     const confirmEmailAsync = async () => {
@@ -66,23 +67,27 @@ const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log(formValues);
+    setLoading(true)
     try {
       await register(formValues);
       setSubmitted(true);
     } catch (e) {
       setError('Failed to register. Please try again later.')
+    } finally {
+      setLoading(false)
     }
   };
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth={isMobile ? "xs" : "sm"}>
       <Box
         display="flex"
         flexDirection="column"
         alignItems="center"
         justifyContent="center"
         minHeight="80vh"
-        marginTop={4}
+        marginTop={2}
+        marginBottom={2}
         textAlign="center"
         bgcolor="white"
         boxShadow={3}
@@ -260,7 +265,8 @@ const Register: React.FC = () => {
                     variant="contained"
                     color="primary"
                     fullWidth
-                  //onClick={handleSubmit}
+                    disabled={loading} 
+                    startIcon={loading ? <CircularProgress size={20} /> : null}
                   >
                     Register
                   </Button>

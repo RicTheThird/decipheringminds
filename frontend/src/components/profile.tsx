@@ -8,7 +8,7 @@ const Profile: React.FC = () => {
         Profile Page
       </Typography>
       <Typography variant="body1">
-        Welcome to the Profile Page of the dashboard.
+        Still under development
       </Typography>
     </div>
   );

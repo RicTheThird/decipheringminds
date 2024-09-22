@@ -22,6 +22,8 @@ import PsychResult from "./components/psych-results";
 import QuestionnairePatient from "./components/questionnaire-patient";
 import Patients from "./components/patients";
 import Meeting from "./components/meeting";
+import Chat from "./components/chat";
+import ChatAdminView from "./components/chat-admin";
 
 const App: React.FC = () => {
   return (
@@ -65,6 +67,7 @@ const MainRoutes: React.FC = () => {
           <Route path="profile" element={<Profile />} />
           <Route path="patient" element={<Patients />} />
           <Route path="meeting" element={<Meeting />} />
+          <Route path="chat-view" element={<ChatAdminView />} />
         </Route>
       </Routes>
     </>

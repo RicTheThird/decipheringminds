@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/ce407e1a-4e7f-4be7-9983-a4367368f009/resourceGroups/DecipheringMindsRG/providers/Microsoft.Web/sites/decipheringminds",
+    "appService.deploySubpath": "build"
+}

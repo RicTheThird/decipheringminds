@@ -40,6 +40,10 @@ const QuestionnairePatient: React.FC = () => {
               gutterBottom
             >
             </Typography> */}
+
+            {!assignedQuestions || assignedQuestions.length === 0 &&
+              <Typography variant="body1">No loaded questionnaires</Typography>
+            }
             <Grid container spacing={3}>
               {assignedQuestions.map((item, index) => {
                 const qDetails = Questionnaires.find(q => q.id == item.testId)

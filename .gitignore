@@ -3,3 +3,6 @@ backend/DecipheringMinds.BackEnd/bin
 backend/DecipheringMinds.BackEnd/.vs
 backend/DecipheringMinds.BackEnd/obj
 samples
+backend/DecipheringMinds.BackEnd/Properties/PublishProfiles
+backend/DecipheringMinds.BackEnd/Properties/ServiceDependencies
+frontend/build

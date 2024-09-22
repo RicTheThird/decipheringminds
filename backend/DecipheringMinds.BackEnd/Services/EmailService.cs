@@ -22,6 +22,7 @@ namespace DecipheringMinds.BackEnd.Services
             var to = new EmailAddress(toEmail, toName);
             var msg = MailHelper.CreateSingleTemplateEmail(from, to, templateId, data);
             var response = await _client.SendEmailAsync(msg);
+            Console.WriteLine(response);
         }
 
         private static Message CreateEmailMessage(string toName, string toEmail, string subject, string body)

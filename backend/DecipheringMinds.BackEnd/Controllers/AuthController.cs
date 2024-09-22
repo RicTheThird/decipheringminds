@@ -38,7 +38,7 @@ namespace DecipheringMinds.BackEnd.Controllers
                 string base64String = Convert.ToBase64String(bytes);
                 var encodedEmail = WebUtility.UrlEncode(base64String);
 
-                var confirmUrl = $"http://localhost:3000/register?token={encodedEmail}";
+                var confirmUrl = $"https://decipheringminds.com/register?token={encodedEmail}";
                 try
                 {
                     await _emailService.SendEmailAsync

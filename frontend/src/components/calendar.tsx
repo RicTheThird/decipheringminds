@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Box, FormControl, InputLabel, Select, CardHeader } from '@mui/material';
+import { Container, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Box, FormControl, InputLabel, Select, CardHeader, CircularProgress } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { useNavigate } from 'react-router-dom';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -23,6 +23,8 @@ const BookingPage = () => {
   const [description, setDescription] = useState('');
   const [selectedTimeRange, setSelectedTimeRange] = useState('');
   const [userAppointments, setUserAppointments] = useState<any[]>([])
+
+  const [loading, setLoading] = useState(false); // Loading state
   //const [profile, setUserProfile] = useState<any>(null)
 
   const profile = getUserProfile();
@@ -48,6 +50,7 @@ const BookingPage = () => {
 
   const handleAddBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true)
     setDescription('');
     setSelectedTimeRange('')
     const startTime = selectedTimeRange.split('-')[0].split(':')[0];
@@ -58,8 +61,14 @@ const BookingPage = () => {
       startTime: Number(startTime),
       endTime: Number(selectedTimeRange.split('-')[1].split(':')[0])
     }
-    await postUserAppointment(request);
-    await setAppointments();
+    try {
+      await postUserAppointment(request);
+      await setAppointments();
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setLoading(false)
+    }
   };
 
   const updateAppointmentStatus = async (status: string, id: number) => {
@@ -102,7 +111,7 @@ const BookingPage = () => {
                           Cancel this appointment
                         </Button>
                       </Grid>
-                      { b.bookedLocation === 'Online' &&
+                      {b.bookedLocation === 'Online' &&
                         <Grid item xs={12} sm={6}>
                           <Button fullWidth variant="contained" type="button" color="primary"
                             onClick={() => navigate(`/dashboard/meeting?meetingNumber=${b.meetingNumber}&meetingPassword=${b.meetingPassword}&email=${profile?.email}&name=${profile?.name}&role=0`)}>
@@ -203,7 +212,9 @@ const BookingPage = () => {
                 </Grid>
               </Grid>
 
-              <Button variant="contained" type="submit" color="primary">
+              <Button variant="contained" type="submit" color="primary"
+                disabled={loading}
+                startIcon={loading ? <CircularProgress size={20} /> : null}>
                 Book
               </Button>
             </form>

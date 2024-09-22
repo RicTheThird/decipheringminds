@@ -11,7 +11,8 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { Link, Outlet } from 'react-router-dom';
 import { getUserProfile, logout } from '../services/authService';
 import AvatarInitials from '../components/avatar';
-
+import { addResponseMessage, Widget } from 'react-chat-widget';
+import 'react-chat-widget/lib/styles.css';
 const drawerWidth = 240;
 
 const Dashboard: React.FC = () => {
@@ -27,6 +28,15 @@ const Dashboard: React.FC = () => {
 
   const profile = getUserProfile();
 
+  const handleNewUserMessage = (newMessage) => {
+    console.log(`New message incoming! ${newMessage}`);
+    // Now send the message throught the backend API
+    setTimeout(writeResponse, 2000);
+  };
+
+  const writeResponse = () => {
+    addResponseMessage('This is an automated response');
+  }
   // Drawer content with avatar and menus
   const drawer = (
     <div>
@@ -54,7 +64,7 @@ const Dashboard: React.FC = () => {
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
-        
+
         {profile?.role === 'Admin' &&
           <ListItem component={Link} to="patient">
             <ListItemIcon>
@@ -63,7 +73,14 @@ const Dashboard: React.FC = () => {
             <ListItemText primary="Patients" />
           </ListItem>
         }
-
+        {profile?.role === 'Admin' &&
+          <ListItem component={Link} to="chat-view">
+            <ListItemIcon>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText primary="Messages" />
+          </ListItem>
+        }
         {profile?.role === 'Admin' &&
           <ListItem component={Link} to="questionnaire">
             <ListItemIcon>
@@ -207,7 +224,11 @@ const Dashboard: React.FC = () => {
   return (
     <Box sx={{ display: 'flex' }}>
       {/* <CssBaseline /> */}
-
+      {profile?.role === 'Customer' &&
+        <Widget
+          handleNewUserMessage={handleNewUserMessage}
+          subtitle="How are you feeling today?" />
+      }
       {/* AppBar for the top toolbar */}
       {/* <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
         <Toolbar>

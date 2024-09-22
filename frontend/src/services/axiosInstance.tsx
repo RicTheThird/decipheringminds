@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Create an Axios instance
 const axiosInstance = axios.create({
-    baseURL: "/api", // Set the base URL from environment variables
+    baseURL: "https://decipheringmindsbackend.azurewebsites.net/api"// -- for prod
+    //baseURL: "/api",
 });
 
 // Add a request interceptor to include the Bearer token

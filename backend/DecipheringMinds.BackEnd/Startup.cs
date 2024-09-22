@@ -35,9 +35,11 @@ public class Startup
             options.AddPolicy("AllowAll",
                 builder =>
                 {
-                    builder.AllowAnyOrigin()
+                    builder//.AllowAnyOrigin()
                            .AllowAnyMethod()
-                           .AllowAnyHeader();
+                           .AllowAnyHeader()
+                           .SetIsOriginAllowed(origin => true)
+                           .AllowCredentials();
                 });
         });
 
@@ -59,6 +61,8 @@ public class Startup
                 ValidateAudience = false
             };
         });
+
+        services.AddSignalR();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
@@ -96,6 +100,7 @@ public class Startup
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
+            endpoints.MapHub<ChatHub>("/chatHub");
         });
     }
 }

@@ -7,8 +7,8 @@ import { getMeetingSignature, getUserProfile } from '../services/authService';
 const sdkKey = "MGJ749hdTHJqnAnzsyT4g";
 const registrantToken = "";
 const zakToken = "";
-const leaveUrlPatient = "https://localhost:3000/dashboard/calendar";
-const leaveUrlAdmin = "https://localhost:3000/dashboard/patient";
+const leaveUrlPatient = "https://decipheringminds.com/dashboard/calendar";
+const leaveUrlAdmin = "https://decipheringminds.com/dashboard/patient";
 
 function startMeeting(signature: string, meetingNumber?: string, meetingPassword?: string,
      userName?: string, userEmail?: string, role?: string, userId?: string) {

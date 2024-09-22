@@ -1,6 +1,6 @@
 // src/components/Login.tsx
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Link, Container } from '@mui/material';
+import { Box, Button, TextField, Typography, Link, Container, CircularProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ const Login: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const [loading, setLoading] = useState(false); // Loading state
   const [formValues, setFormValues] = useState({
     userName: "",
     password: "",
@@ -28,24 +29,27 @@ const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     // Login logic here
     e.preventDefault();
+    setLoading(true)
     try {
       await login(formValues.userName, formValues.password)
       navigate('/home');
     } catch (error) {
       setLoginError("Invalid User name or password")
+    } finally {
+      setLoading(false)
     }
 
   };
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth={isMobile ? "xs" : "sm"}>
       <Box
         display="flex"
         flexDirection="column"
         alignItems="center"
         justifyContent="center"
-        minHeight="80vh"
-        marginTop={4}
+        minHeight="70vh"
+        marginTop={isMobile ? 0 : 4}
         textAlign="center"
         bgcolor="white"
         boxShadow={3}
@@ -105,6 +109,8 @@ const Login: React.FC = () => {
             color="primary"
             fullWidth
             sx={{ marginTop: 2, padding: '10px' }}
+            disabled={loading} 
+            startIcon={loading ? <CircularProgress size={20} /> : null}
           >
             Login
           </Button></form>
@@ -115,6 +121,11 @@ const Login: React.FC = () => {
             Don't have an account?{' '}
             <Link href="/register" underline="hover">
               Register here
+            </Link>
+          </Typography>
+          <Typography mt={2} variant="body2">
+            <Link href="/register" underline="hover">
+              Forgot password?
             </Link>
           </Typography>
         </Box>
