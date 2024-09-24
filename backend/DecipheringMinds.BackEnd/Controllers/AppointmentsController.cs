@@ -45,6 +45,22 @@ namespace DecipheringMinds.BackEnd.Controllers
             return appointments;
         }
 
+        // GET: api/Appointments/5
+        [Authorize]
+        [HttpPost("unavailable-time")]
+        public async Task<ActionResult<List<Appointments>>> GetUnAvalaibleAppointmentsTime(QueryAppointmentsByDate request)
+        {
+            var appointments = await _context.Appointments
+                .Where(a => a.Status == "Confirmed" && a.BookedDate.Date == request.AppointmentDate.Date).ToListAsync();
+
+            if (appointments == null)
+            {
+                return new List<Appointments>();
+            }
+
+            return appointments;
+        }
+
         [Authorize]
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Appointments>>> GetAppointmentsByUserId(int userId)
@@ -202,5 +218,10 @@ namespace DecipheringMinds.BackEnd.Controllers
         {
             return _context.Appointments.Any(e => e.Id == id);
         }
+    }
+
+    public class QueryAppointmentsByDate
+    {
+        public DateTime AppointmentDate { get; set; }
     }
 }

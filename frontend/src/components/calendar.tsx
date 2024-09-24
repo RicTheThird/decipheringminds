@@ -4,7 +4,7 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { useNavigate } from 'react-router-dom';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { getMyAppointment, postUserAppointment, updateUserAppointmentStatus } from '../services/apiService';
+import { getActiveAppointmentByDate, getMyAppointment, postUserAppointment, updateUserAppointmentStatus } from '../services/apiService';
 import { getUserProfile } from '../services/authService';
 
 const generateTimeRanges = (startHour, endHour) => {
@@ -23,7 +23,7 @@ const BookingPage = () => {
   const [description, setDescription] = useState('');
   const [selectedTimeRange, setSelectedTimeRange] = useState('');
   const [userAppointments, setUserAppointments] = useState<any[]>([])
-
+  const [unAvailableTimes, setUnAvailableTimes] = useState<any[]>([])
   const [loading, setLoading] = useState(false); // Loading state
   //const [profile, setUserProfile] = useState<any>(null)
 
@@ -31,6 +31,7 @@ const BookingPage = () => {
 
   useEffect(() => {
     setAppointments();
+    handleDateChange(dayjs())
   }, []);
 
   const setAppointments = async () => {
@@ -64,6 +65,7 @@ const BookingPage = () => {
     try {
       await postUserAppointment(request);
       await setAppointments();
+      handleDateChange(dateTime)
     } catch (e) {
       console.log(e)
     } finally {
@@ -76,9 +78,18 @@ const BookingPage = () => {
     await setAppointments();
   }
 
-  const handleDateChange = (date: any) => {
+  const handleDateChange = async (date: any) => {
+    const response = await getActiveAppointmentByDate(dayjs(date).toDate());
+    let time: any[] = []
+    if (response && response.length > 0) {
+      const temp = response.map((r) => `${r.startTime}:00-${r.endTime}:00`);
+      setUnAvailableTimes(temp)
+    } else
+      setUnAvailableTimes([])
     setDateTime(date);
+    setSelectedTimeRange('')
   };
+
 
 
   return (
@@ -171,6 +182,8 @@ const BookingPage = () => {
                 <Grid item xs={12} sm={6}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
+                      disablePast
+                      format='YYYY-MM-DD'
                       label="Select Appointment Date"
                       value={dateTime}
                       onChange={handleDateChange}
@@ -192,11 +205,17 @@ const BookingPage = () => {
                       onChange={(e) => handleTimeRangeChange(e.target.value)}
                       label="Select Time Range"
                     >
-                      {timeRanges.map((range, index) => (
-                        <MenuItem key={index} value={range}>
-                          {range}
-                        </MenuItem>
-                      ))}
+                      {timeRanges.map((range, index) => {
+                        const currentHour = dayjs().hour();
+                        const isToday = dayjs().isSame(dateTime, 'day');
+                        const startTime = Number(range.split(":")[0]);
+                        const disabled = unAvailableTimes.some(u => u === range) || (currentHour >= startTime && isToday);
+                        return (
+                          <MenuItem key={index} value={range} disabled={disabled}>
+                            {`${range}   ${disabled ? '(Unavailable)' : ''}`}
+                          </MenuItem>
+                        )
+                      })}
                     </Select>
                   </FormControl>
                 </Grid>

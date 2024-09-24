@@ -9,7 +9,7 @@ public abstract class BaseController : ControllerBase
     {
         if (User.Identity.IsAuthenticated)
         {
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData);
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.SerialNumber);
             return int.Parse(userIdClaim?.Value);
         }
         return 0; // or throw an exception if you want to enforce that the user must be authenticated

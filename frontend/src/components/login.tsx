@@ -1,16 +1,19 @@
 // src/components/Login.tsx
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Link, Container, CircularProgress } from '@mui/material';
+import { Box, Button, TextField, Typography, Link, Container, CircularProgress, IconButton, InputAdornment } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/authService';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
+  const [showPassword, setShowPassword] = useState(false);
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleMouseDownPassword = () => setShowPassword(!showPassword);
   const [loading, setLoading] = useState(false); // Loading state
   const [formValues, setFormValues] = useState({
     userName: "",
@@ -94,13 +97,26 @@ const Login: React.FC = () => {
           <TextField
             label="Password"
             variant="outlined"
-            type="password"
+            type={showPassword ? "text" : "password"}
             fullWidth
             required
             name='password'
             margin="normal"
             value={formValues.password}
             onChange={handleInputChange}
+            InputProps={{ // <-- This is where the toggle button is added.
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                  >
+                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
 
           <Button
@@ -109,7 +125,7 @@ const Login: React.FC = () => {
             color="primary"
             fullWidth
             sx={{ marginTop: 2, padding: '10px' }}
-            disabled={loading} 
+            disabled={loading}
             startIcon={loading ? <CircularProgress size={20} /> : null}
           >
             Login

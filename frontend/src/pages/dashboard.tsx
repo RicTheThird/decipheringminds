@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, CssBaseline, Drawer, AppBar, Toolbar, Typography, IconButton, List, ListItem, ListItemIcon, ListItemText, Avatar, Divider } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, CssBaseline, Drawer, AppBar, Toolbar, Typography, IconButton, List, ListItem, ListItemIcon, ListItemText, Avatar, Divider, SpeedDialIcon } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -8,46 +8,100 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import HomeIcon from '@mui/icons-material/Home';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { getUserProfile, logout } from '../services/authService';
 import AvatarInitials from '../components/avatar';
-import { addResponseMessage, Widget } from 'react-chat-widget';
+import { addResponseMessage, addUserMessage, Widget } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
+import { getMyMessages, sendMessage } from '../services/apiService';
+import eventEmitter from '../services/eventEmitter';
+import { CalendarIcon } from '@mui/x-date-pickers';
 const drawerWidth = 240;
+const userId = Number(localStorage.getItem('userId'))
+
+// Utility function to generate a GUID
+const generateGUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0; // Generate a random number between 0 and 15
+    const v = c === 'x' ? r : (r & 0x3 | 0x8); // For 'y', ensure the leading bits are 10
+    return v.toString(16);
+  });
+};
 
 const Dashboard: React.FC = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
 
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [chat, setChat] = useState<any[]>([]);
+  const [chatIds, setChatIds] = useState<any[]>([]);
+  const [unOpenedMsgs, setUnOpenedMsgs] = useState<any>(null)
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Handle drawer toggle
+  // useEffect(() => {
+  //   if(chat.length === 0) getMessages()
+  // }, []);
+
+
+  useEffect(() => {
+    //getMessages()
+    // Start the interval when the component mounts
+    const intervalId = setInterval(getMessages, 8000); // Call fetchData every 1 second
+
+    // Cleanup function to clear the interval on unmount
+    return () => clearInterval(intervalId);
+  }, [chat, chatIds]); // Empty dependency array ensures this runs only on mount
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const profile = getUserProfile();
 
-  const handleNewUserMessage = (newMessage) => {
-    console.log(`New message incoming! ${newMessage}`);
-    // Now send the message throught the backend API
-    setTimeout(writeResponse, 2000);
+  const getMessages = async () => {
+    try {
+      const response = await getMyMessages();
+      if (response && response.length > 0) {
+        eventEmitter.emit('messagePublished', response);
+        const newMsgsCount = response.filter(c => c.senderId !== userId && !c.isSeen)?.length;
+        setUnOpenedMsgs(newMsgsCount)
+        setChat(response)
+        writeResponse(response.reverse())
+      }
+    } catch (e) {
+      console.log(e)
+    }
   };
 
-  const writeResponse = () => {
-    addResponseMessage('This is an automated response');
+
+  const handleNewUserMessage = async (newMessage) => {
+    const chatId = generateGUID()
+    setChatIds((prevArray) => [...prevArray, chatId]);
+    await sendMessage({ fromPatient: true, message: newMessage, clientMsgId: chatId })
+  };
+
+  const writeResponse = (response: any[]) => {
+    const newChat = response.filter(r => !chat.some(c => c.id === r.id))
+    newChat.forEach(f => {
+      if (f.recipientId === userId) {
+        addResponseMessage(f.message);
+      } else {
+        if (!chatIds.some(c => c === f.clientMessageId))
+          addUserMessage(f.message)
+      }
+    })
   }
   // Drawer content with avatar and menus
   const drawer = (
     <div>
       {/* Avatar */}
       <Box display="flex" justifyContent="center" alignItems="center" p={2}>
-        {/* <Avatar
+        <Avatar
           alt="User Name"
-          src="/dashboard-avatar.png" // Replace with real avatar image
+          src={profile?.avatarLink} // Replace with real avatar image
           sx={{ width: 80, height: 80 }}
-        /> */}
-        <AvatarInitials userName={profile?.name} size={80} />
+        />
+        {/* <AvatarInitials userName={profile?.name} size={80} /> */}
       </Box>
 
       <Typography variant="h6" align="center" gutterBottom>
@@ -76,9 +130,17 @@ const Dashboard: React.FC = () => {
         {profile?.role === 'Admin' &&
           <ListItem component={Link} to="chat-view">
             <ListItemIcon>
-              <AccountCircleIcon />
+              <img
+                src="/messages.png"
+                alt="Messages"
+                style={{ width: '28px', height: '28px' }}
+              />
             </ListItemIcon>
             <ListItemText primary="Messages" />
+            {
+              unOpenedMsgs !== null && unOpenedMsgs > 0 && location.pathname !== '/dashboard/chat-view' &&
+              <Typography color='error' sx={{ marginRight: '25px', fontStyle: 'bold', fontWeight: 600 }}>({unOpenedMsgs})</Typography>
+            }
           </ListItem>
         }
         {profile?.role === 'Admin' &&
@@ -87,7 +149,7 @@ const Dashboard: React.FC = () => {
               <img
                 src="/questionnaire.png"
                 alt="Questionnaire"
-                style={{ width: '30px', height: '30px', borderRadius: '50%' }}
+                style={{ width: '30px', height: '30px' }}
               />
             </ListItemIcon>
             <ListItemText primary="Questionnaire" />
@@ -100,7 +162,7 @@ const Dashboard: React.FC = () => {
               <img
                 src="/questionnaire.png"
                 alt="Questionnaire"
-                style={{ width: '30px', height: '30px', borderRadius: '50%' }}
+                style={{ width: '30px', height: '30px' }}
               />
             </ListItemIcon>
             <ListItemText primary="Questionnaire" />
@@ -111,9 +173,9 @@ const Dashboard: React.FC = () => {
           <ListItem component={Link} to="psych-result">
             <ListItemIcon>
               <img
-                src="/questionnaire.png"
-                alt="Questionnaire"
-                style={{ width: '30px', height: '30px', borderRadius: '50%' }}
+                src="/report.png"
+                alt="Result"
+                style={{ width: '25px', height: '25px' }}
               />
             </ListItemIcon>
             <ListItemText primary="Result" />
@@ -125,9 +187,9 @@ const Dashboard: React.FC = () => {
           <ListItem component={Link} to="psych-report">
             <ListItemIcon>
               <img
-                src="/psych.png"
+                src="/report.png"
                 alt="Pysch Report"
-                style={{ width: '30px', height: '30px', borderRadius: '50%' }}
+                style={{ width: '25px', height: '25px' }}
               />
             </ListItemIcon>
             <ListItemText primary="Pysch Report" />
@@ -147,7 +209,7 @@ const Dashboard: React.FC = () => {
           </ListItem>
         }
 
-        {profile?.role === 'Admin' &&
+        {/* {profile?.role === 'Admin' &&
           <ListItem>
             <ListItemIcon>
               <img
@@ -158,16 +220,12 @@ const Dashboard: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="Intervention" />
           </ListItem>
-        }
+        } */}
 
         {profile?.role === 'Customer' &&
           <ListItem component={Link} to="calendar">
             <ListItemIcon>
-              <img
-                src="/calendar.png"
-                alt="Calendar"
-                style={{ width: '25px', height: '25px', borderRadius: '50%' }}
-              />
+              <CalendarIcon />
             </ListItemIcon>
             <ListItemText primary="Appointments" />
           </ListItem>
@@ -176,11 +234,7 @@ const Dashboard: React.FC = () => {
         {profile?.role === 'Admin' &&
           <ListItem component={Link} to="admin-calendar">
             <ListItemIcon>
-              <img
-                src="/calendar.png"
-                alt="Calendar"
-                style={{ width: '25px', height: '25px', borderRadius: '50%' }}
-              />
+              <CalendarIcon />
             </ListItemIcon>
             <ListItemText primary="Appointment Calendar" />
           </ListItem>
@@ -226,6 +280,7 @@ const Dashboard: React.FC = () => {
       {/* <CssBaseline /> */}
       {profile?.role === 'Customer' &&
         <Widget
+          //handleSubmit={handleSubmitMessage}
           handleNewUserMessage={handleNewUserMessage}
           subtitle="How are you feeling today?" />
       }
@@ -269,8 +324,9 @@ const Dashboard: React.FC = () => {
         component="main"
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
-        <Toolbar>
-          {isMobile && (
+        {isMobile && (
+          <Toolbar>
+
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -280,8 +336,9 @@ const Dashboard: React.FC = () => {
             >
               <MenuIcon />
             </IconButton>
-          )}
-        </Toolbar>
+          </Toolbar>
+
+        )}
         <Outlet />
       </Box>
     </Box>

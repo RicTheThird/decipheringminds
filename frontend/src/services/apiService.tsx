@@ -46,6 +46,12 @@ export const getActiveAppointment = async () => {
     return response.data;
 };
 
+export const getActiveAppointmentByDate = async (data: any) => {
+    const response = await axiosInstance.post('/appointments/unavailable-time', {appointmentDate : data});
+    return response.data;
+};
+
+
 export const getAllPatients = async () => {
     const response = await axiosInstance.get('/users');
     return response.data;
@@ -53,5 +59,20 @@ export const getAllPatients = async () => {
 
 export const getUserById = async (userId: number) => {
     const response = await axiosInstance.get(`/users/${userId}`);
+    return response.data;
+}
+
+export const getMyMessages = async () => {
+    const response = await axiosInstance.get(`/messages/my`);
+    return response.data;
+}
+
+export const sendMessage = async (msg: any) => {
+    const response = await axiosInstance.post(`/messages`, msg);
+    return response.data;
+}
+
+export const seenMessages = async (data: any) => {
+    const response = await axiosInstance.post(`/messages/seen`, data);
     return response.data;
 }

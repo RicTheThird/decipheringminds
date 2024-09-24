@@ -72,3 +72,20 @@ code {
     /* position: absolute !important; */
   }
 }
+
+.rce-container-input {
+    position: absolute;
+    bottom: 20px;
+    width: -webkit-fill-available;
+    min-width: auto !important;
+}
+
+.rce-container-mlist {
+  max-height: 70vh !important;
+  overflow: auto;
+}
+
+.rce-container-clist {
+  max-height: 80vh !important;
+}
+

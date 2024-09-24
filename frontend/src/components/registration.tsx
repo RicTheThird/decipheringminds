@@ -10,6 +10,8 @@ import {
   Grid,
   MenuItem,
   CircularProgress,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -17,9 +19,38 @@ import { useSearchParams } from "react-router-dom";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { confirmEmail, register } from "../services/authService";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+
+const PasswordInvalidErrorMessage = "Password must be at least 8 characters long, contain at least one uppercase and lowercase, a number and a special character."
+function validatePassword(password: string): boolean {
+  // Minimum password length
+  const minLength = 8;
+
+  // Regular expressions for validation criteria
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  // Validate password
+  return (
+    password.length >= minLength &&
+    hasUpperCase &&
+    hasLowerCase &&
+    hasNumbers &&
+    hasSpecialChars
+  );
+}
 
 const Register: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleMouseDownPassword = () => setShowPassword(!showPassword);
+
+  const [showPassword2, setShowPassword2] = useState(false);
+  const handleClickShowPassword2 = () => setShowPassword2(!showPassword2);
+  const handleMouseDownPassword2 = () => setShowPassword2(!showPassword2);
   const token = searchParams.get('token') || '';
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -44,10 +75,12 @@ const Register: React.FC = () => {
     gender: "",
     email: "",
     passwordHash: "",
+    passwordConfirm: "",
   });
 
   const [error, setError] = useState('');
-
+  const [passwordNotMatch, setPasswordNotMatch] = useState(false);
+  const [passwordPassed, setPasswordPassed] = useState(true);
   const [isSubmitted, setSubmitted] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +88,21 @@ const Register: React.FC = () => {
       ...formValues,
       [e.target.name]: e.target.value,
     });
+
+    if (e.target.name === 'passwordHash') {
+      setPasswordPassed(e.target.value !== '' ? validatePassword(e.target.value) : true)
+      if (formValues.passwordConfirm != '' && e.target.value !== '') {
+        setPasswordNotMatch(e.target.value !== formValues.passwordConfirm)
+      }
+    }
+
+    if (e.target.name === 'passwordConfirm') {
+      if (e.target.value !== formValues.passwordHash && e.target.value !== '') {
+        setPasswordNotMatch(true)
+      } else {
+        setPasswordNotMatch(false)
+      }
+    }
   };
 
   const handleDateChange = (date: any) => {
@@ -66,6 +114,7 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if(!passwordPassed || passwordNotMatch) return;
     console.log(formValues);
     setLoading(true)
     try {
@@ -124,7 +173,7 @@ const Register: React.FC = () => {
             {/* Confirmation Message */}
             <Typography variant="body1" color="textSecondary" gutterBottom>
               Thank you! You can now login <Link href="/login" underline="hover">here
-                </Link>
+              </Link>
             </Typography>
           </>
         )}
@@ -235,12 +284,27 @@ const Register: React.FC = () => {
                   <TextField
                     label="Password"
                     name="passwordHash"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={formValues.passwordHash}
                     onChange={handleInputChange}
                     variant="outlined"
+                    error={!passwordPassed}
+                    helperText={!passwordPassed ? PasswordInvalidErrorMessage : ''}
                     fullWidth
                     required
+                    InputProps={{ // <-- This is where the toggle button is added.
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                          >
+                            {showPassword ? <Visibility /> : <VisibilityOff />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
                   />
                 </Grid>
 
@@ -248,13 +312,28 @@ const Register: React.FC = () => {
                 <Grid item xs={12}>
                   <TextField
                     label="Confirm Password"
-                    name="passwordHash"
-                    type="password"
-                    value={formValues.passwordHash}
+                    name="passwordConfirm"
+                    type={showPassword2 ? "text" : "password"}
+                    value={formValues.passwordConfirm}
                     onChange={handleInputChange}
+                    error={passwordNotMatch}
+                    helperText={passwordNotMatch ? 'Password does not match' : ''}
                     variant="outlined"
                     fullWidth
                     required
+                    InputProps={{ // <-- This is where the toggle button is added.
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword2}
+                            onMouseDown={handleMouseDownPassword2}
+                          >
+                            {showPassword2 ? <Visibility /> : <VisibilityOff />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
                   />
                 </Grid>
 
@@ -265,7 +344,7 @@ const Register: React.FC = () => {
                     variant="contained"
                     color="primary"
                     fullWidth
-                    disabled={loading} 
+                    disabled={loading}
                     startIcon={loading ? <CircularProgress size={20} /> : null}
                   >
                     Register

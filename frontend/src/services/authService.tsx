@@ -6,7 +6,14 @@ import axiosInstance from './axiosInstance';
 export interface UserProfile {
     email: string,
     role: string,
-    unique_name: string
+    unique_name: string,
+    certserialnumber: string
+}
+
+
+function getRandomHexColor(): string {
+    const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+    return `${randomColor.padStart(6, '0')}`;
 }
 
 // Function to handle user login
@@ -44,10 +51,20 @@ export const isAuthenticated = () => {
 export const getUserProfile = () => {
     if (isAuthenticated()) {
         const decoded = decodeJwt<UserProfile>(localStorage.getItem('authToken') || '').decodedToken;
+        localStorage.setItem('userId', decoded?.certserialnumber || '')
+        let avatarBgColor = ''
+        if(localStorage.getItem('avatarColor')) {
+            avatarBgColor = localStorage.getItem('avatarColor') ?? getRandomHexColor()
+        } else {
+            avatarBgColor = getRandomHexColor()
+            localStorage.setItem('avatarColor', avatarBgColor)
+        }
         return {
             name: decoded?.unique_name,
             email: decoded?.email,
             role: decoded?.role,
+            userId: decoded?.certserialnumber,
+            avatarLink: `https://ui-avatars.com/api/?format=svg&rounded=true&name=${decoded?.unique_name?.split(' ')[0]}+${decoded?.unique_name?.split(' ')[1]}&background=${avatarBgColor}&color=fff`
         };
     }
     return null;
@@ -76,5 +93,5 @@ export const getMeetingSignature = (meetingNumber, role, expirationSeconds) => {
     const sHeader = JSON.stringify(oHeader)
     const sPayload = JSON.stringify(oPayload)
     const sdkJWT = KJUR.jws.JWS.sign('HS256', sHeader, sPayload, "G4ejgMwF3ldIm8HUGJyghroVUOrDHO3K")
-    return  sdkJWT 
+    return sdkJWT
 }

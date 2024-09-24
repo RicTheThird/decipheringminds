@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using DecipheringMinds.BackEnd.Models;
 
 namespace DecipheringMinds.BackEnd.Models
 {
@@ -32,5 +33,7 @@ namespace DecipheringMinds.BackEnd.Models
             //    .ToTable("UserTests")
             //    .HasMany(u => u.UserScores);
         }
+
+        public DbSet<DecipheringMinds.BackEnd.Models.Messages> Messages { get; set; } = default!;
     }
 }

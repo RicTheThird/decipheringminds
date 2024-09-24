@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { getAllPatients } from '../services/apiService';
 
-const UserSearch = ({setSelectedPatient}) => {
+const UserSearch = ({ setSelectedPatient }) => {
   const [searchTerm, setSearchTerm] = useState('');
   //const [selectedUser, setSelectedUser] = useState(null);
   const [patients, setPatients] = useState<any[]>([]);
@@ -33,7 +33,7 @@ const UserSearch = ({setSelectedPatient}) => {
   const onSearch = (key: string) => {
     setSearchTerm(key);
     const filtered = patients.filter(user =>
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.lastName.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setSearchResult(filtered)
@@ -59,10 +59,15 @@ const UserSearch = ({setSelectedPatient}) => {
         margin="normal"
       />
       {searchTerm && searchResults && searchResults.length > 0 &&
-        <Paper>
+        <Paper sx={{ position: 'absolute', zIndex: 999, width: '-webkit-fill-available', overflow: 'auto', maxHeight: '50vh' }}>
           <List>
             {searchResults.map((user) => (
-              <ListItem
+              <ListItem sx={{
+                '&:hover': {
+                  backgroundColor: '#007bff', // Change to your desired hover color
+                  color: 'white', // Change text color on hover
+                },
+              }}
                 key={user.id}
                 //selected={selectedUser?.id === user.id}
                 onClick={() => handleUserClick(user)}
