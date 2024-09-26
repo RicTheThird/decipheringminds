@@ -76,3 +76,8 @@ export const seenMessages = async (data: any) => {
     const response = await axiosInstance.post(`/messages/seen`, data);
     return response.data;
 }
+
+export const postPsychReport = async (data: any) => {
+    const response = await axiosInstance.post(`/psychreports`, data);
+    return response.data;
+}

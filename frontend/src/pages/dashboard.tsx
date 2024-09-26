@@ -38,19 +38,17 @@ const Dashboard: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // useEffect(() => {
-  //   if(chat.length === 0) getMessages()
-  // }, []);
+  useEffect(() => {
+    getMessages()
+  }, []);
 
 
   useEffect(() => {
-    //getMessages()
-    // Start the interval when the component mounts
-    const intervalId = setInterval(getMessages, 8000); // Call fetchData every 1 second
-
+    // fectch chat messages every 8secs
+    const intervalId = setInterval(getMessages, 8000);
     // Cleanup function to clear the interval on unmount
     return () => clearInterval(intervalId);
-  }, [chat, chatIds]); // Empty dependency array ensures this runs only on mount
+  }, [chat, chatIds]); 
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -187,16 +185,16 @@ const Dashboard: React.FC = () => {
           <ListItem component={Link} to="psych-report">
             <ListItemIcon>
               <img
-                src="/report.png"
-                alt="Pysch Report"
+                src="/analytics.png"
+                alt="Analytics"
                 style={{ width: '25px', height: '25px' }}
               />
             </ListItemIcon>
-            <ListItemText primary="Pysch Report" />
+            <ListItemText primary="Analytics" />
           </ListItem>
         }
 
-        {profile?.role === 'Admin' &&
+        {/* {profile?.role === 'Admin' &&
           <ListItem component={Link} to="diagnostic">
             <ListItemIcon>
               <img
@@ -207,7 +205,7 @@ const Dashboard: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="Diagnostic" />
           </ListItem>
-        }
+        } */}
 
         {/* {profile?.role === 'Admin' &&
           <ListItem>

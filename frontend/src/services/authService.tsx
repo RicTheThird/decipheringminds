@@ -11,35 +11,73 @@ export interface UserProfile {
 }
 
 
+export const PasswordInvalidErrorMessage = "Password must be at least 8 characters long, contain at least one uppercase and lowercase, a number and a special character."
+
 function getRandomHexColor(): string {
     const randomColor = Math.floor(Math.random() * 16777215).toString(16);
     return `${randomColor.padStart(6, '0')}`;
 }
 
-// Function to handle user login
-export const login = async (userName: string, password: string) => {
-    const response = await axiosInstance.post('/auth/login', { userName, password });
-    // Save the token to localStorage or sessionStorage
-    localStorage.setItem('authToken', response.data.token);
-    return response.data;
+export function validatePassword(password: string): boolean {
+    // Minimum password length
+    const minLength = 8;
+
+    // Regular expressions for validation criteria
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    // Validate password
+    return (
+        password.length >= minLength &&
+        hasUpperCase &&
+        hasLowerCase &&
+        hasNumbers &&
+        hasSpecialChars
+    );
+}
+
+export const login = async (data: any) => {
+    const response = await axiosInstance.post('/auth/login', data);
+    if (response.status === 200) {
+        // Save the token to localStorage or sessionStorage
+        localStorage.setItem('authToken', response.data.token);
+        localStorage.removeItem('sessiontimeout');
+    }
+    return response;
 };
 
-// Function to handle user registration
 export const register = async (user: any) => {
     const response = await axiosInstance.post('/auth/register', user);
-    return response.data;
+    return response;
 };
 
-// Function to handle user registration
+export const verifyToken = async (token: string) => {
+    const response = await axiosInstance.get(`/auth/verify-key/${token}`);
+    return response;
+}
+
+export const resetPassword = async (data: any) => {
+    const response = await axiosInstance.post(`/auth/reset-password`, data);
+    return response;
+}
+
+export const forgotPassword = async (data: any) => {
+    const response = await axiosInstance.post(`/auth/forgot-password`, data);
+    return response;
+}
+
 export const confirmEmail = async (token: string) => {
     const response = await axiosInstance.post('/auth/confirm-email', { token });
-    return response.data;
+    return response;
 };
 
-// Function to handle user logout
+
 export const logout = () => {
     // Remove the token from localStorage or sessionStorage
     localStorage.removeItem('authToken');
+    localStorage.removeItem('sessiontimeout');
 };
 
 // Function to check if the user is authenticated
@@ -53,7 +91,7 @@ export const getUserProfile = () => {
         const decoded = decodeJwt<UserProfile>(localStorage.getItem('authToken') || '').decodedToken;
         localStorage.setItem('userId', decoded?.certserialnumber || '')
         let avatarBgColor = ''
-        if(localStorage.getItem('avatarColor')) {
+        if (localStorage.getItem('avatarColor')) {
             avatarBgColor = localStorage.getItem('avatarColor') ?? getRandomHexColor()
         } else {
             avatarBgColor = getRandomHexColor()

@@ -6,7 +6,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace DecipheringMinds.BackEnd.Controllers
@@ -50,7 +49,7 @@ namespace DecipheringMinds.BackEnd.Controllers
                     return BadRequest(ex.Message);
                 }
             }
-            return response.IsSuccess ? Ok() : BadRequest();
+            return response.IsSuccess ? Ok() : BadRequest(response.Errors.FirstOrDefault());
         }
 
         [AllowAnonymous]
@@ -59,7 +58,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         {
             var user = await _userService.Authenticate(model.UserName, model.Password);
             if (user == null)
-                return Unauthorized();
+                return Unauthorized("LoginFailed");
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtSecret);
@@ -72,7 +71,7 @@ namespace DecipheringMinds.BackEnd.Controllers
                     new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
                     new Claim(ClaimTypes.SerialNumber, user.Id.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddMinutes(3),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -85,13 +84,105 @@ namespace DecipheringMinds.BackEnd.Controllers
         [HttpPost("confirm-email")]
         public async Task<IActionResult> Confirm([FromBody] ConfirmRequest request)
         {
-            var base64Email = WebUtility.UrlDecode(request.Token);
-            byte[] bytes = Convert.FromBase64String(base64Email);
-            // Convert byte array to string
-            string decodedEmail = Encoding.UTF8.GetString(bytes);
+            string decodedEmail = string.Empty;
+            try
+            {
+                decodedEmail = DecodeTokenKey(request.Token);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Error occured: Invalid token.");
+            }
 
             var result = await _userService.ConfirmEmail(decodedEmail);
-            return result.IsSuccess ? Ok() : BadRequest();
+            return result.IsSuccess ? Ok() : BadRequest(result.Errors.FirstOrDefault());
+        }
+
+        [AllowAnonymous]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            var userModel = await _userService.GetUserByEmail(request.Email);
+            if (userModel != null)
+            {
+                var token = Guid.NewGuid().ToString();
+                byte[] bytes = Encoding.UTF8.GetBytes(token);
+                string base64String = Convert.ToBase64String(bytes);
+                var encodedToken = WebUtility.UrlEncode(base64String);
+
+                //var resetUrl = $"https://decipheringminds.com/reset-password?token={encodedToken}"; //PROD
+                var resetUrl = $"http://localhost:3000/forgot-password?token={encodedToken}";
+                try
+                {
+                    await _emailService.SendEmailAsync
+                    (userModel.FirstName, userModel.Email, "d-d2ab2ea393934116a8fddb9be53cb3bb",
+                    new { FirstName = userModel.FirstName, ResetPasswordUrl = resetUrl });
+
+                    //Add key
+                    userModel.ForgotPasswordKey = token;
+                    await _userService.UpdateUser(userModel);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+
+            return Accepted();
+        }
+
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            string decodedToken = string.Empty;
+            try
+            {
+                decodedToken = DecodeTokenKey(request.Token);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Error occured: Invalid token.");
+            }
+
+            var userModel = await _userService.GetUserByForgotPasswordToken(decodedToken);
+            if (userModel != null)
+            {
+                try
+                {
+                    userModel.PasswordHash = _userService.HashPassword(request.NewPassword);
+                    userModel.EmailVerified = true;
+                    userModel.ForgotPasswordKey = null;
+                    await _userService.UpdateUser(userModel);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+            else
+            {
+                return BadRequest("Invalid request. Token have expired.");
+            }
+            return Accepted();
+        }
+
+        [AllowAnonymous]
+        [HttpGet("verify-key/{key}")]
+        public async Task<IActionResult> VerifyForgotPasswordKey(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return BadRequest("Invalid token");
+            string decodedToken = string.Empty;
+            try
+            {
+                decodedToken = DecodeTokenKey(key);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Invalid token");
+            }
+            var userModel = await _userService.GetUserByForgotPasswordToken(decodedToken);
+            return userModel != null ? Accepted() : BadRequest("Invalid request. Token have expired.");
         }
 
         [HttpGet("me")]
@@ -100,6 +191,13 @@ namespace DecipheringMinds.BackEnd.Controllers
         {
             var userName = User.Identity.Name;
             return Ok(new { UserName = userName });
+        }
+
+        private string DecodeTokenKey(string rawString)
+        {
+            var base64Token = WebUtility.UrlDecode(rawString);
+            byte[] bytes = Convert.FromBase64String(base64Token);
+            return Encoding.UTF8.GetString(bytes);
         }
     }
 }
@@ -113,4 +211,15 @@ public class LoginModel
 public class ConfirmRequest
 {
     public string Token { get; set; }
+}
+
+public class ForgotPasswordRequest
+{
+    public string Email { get; set; }
+}
+
+public class ResetPasswordRequest
+{
+    public string Token { get; set; }
+    public string NewPassword { get; set; }
 }

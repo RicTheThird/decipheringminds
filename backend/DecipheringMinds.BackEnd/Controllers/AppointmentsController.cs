@@ -26,7 +26,9 @@ namespace DecipheringMinds.BackEnd.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Appointments>>> GetAppointments()
         {
-            return await _context.Appointments.Where(a => a.Status != "Cancelled").Include(a => a.User).ToListAsync();
+            return await _context.Appointments.Where(a => a.Status != "Cancelled")
+                .Include(a => a.User)
+                .Include(a => a.PsychReports).ToListAsync();
         }
 
         // GET: api/Appointments/5
@@ -65,7 +67,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Appointments>>> GetAppointmentsByUserId(int userId)
         {
-            var appointments = await _context.Appointments.Include(a => a.User)
+            var appointments = await _context.Appointments.AsNoTracking().Include(a => a.User).Include(a => a.PsychReports)
                 .Where(a => a.UserId == userId).OrderByDescending(a => a.BookedDate).ToListAsync();
 
             if (appointments == null)
@@ -111,9 +113,10 @@ namespace DecipheringMinds.BackEnd.Controllers
 
         [Authorize]
         [HttpGet("my")]
-        public async Task<ActionResult<IEnumerable<Appointments>>> GetMyAppointmentsBy()
+        public async Task<ActionResult<IEnumerable<Appointments>>> GetMyAppointments()
         {
             var appointments = await _context.Appointments
+                .Include(a => a.PsychReports)
                 .Where(a => a.UserId == GetUserId() && a.Status != "Cancelled").ToListAsync();
 
             if (appointments == null)

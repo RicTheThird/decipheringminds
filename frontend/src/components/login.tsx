@@ -1,5 +1,5 @@
 // src/components/Login.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, TextField, Typography, Link, Container, CircularProgress, IconButton, InputAdornment } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -22,6 +22,13 @@ const Login: React.FC = () => {
 
   const [loginError, setLoginError] = useState('');
 
+
+  useEffect(() => {
+    if(localStorage.getItem('sessiontimeout')) {
+      setLoginError('You have been logged out due to session timeout.')
+    }
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues({
       ...formValues,
@@ -30,18 +37,20 @@ const Login: React.FC = () => {
   };
 
   const handleLogin = async (e: React.FormEvent) => {
-    // Login logic here
     e.preventDefault();
     setLoading(true)
     try {
-      await login(formValues.userName, formValues.password)
-      navigate('/home');
+      const response: any = await login({ userName: formValues.userName, password: formValues.password })
+      if (response.status === 200) {
+        navigate('/home');
+      } else {
+        setLoginError("Invalid User name or password")
+      }
     } catch (error) {
       setLoginError("Invalid User name or password")
     } finally {
       setLoading(false)
     }
-
   };
 
   return (
@@ -140,7 +149,7 @@ const Login: React.FC = () => {
             </Link>
           </Typography>
           <Typography mt={2} variant="body2">
-            <Link href="/register" underline="hover">
+            <Link href="/forgot-password" underline="hover">
               Forgot password?
             </Link>
           </Typography>

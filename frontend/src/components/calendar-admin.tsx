@@ -33,9 +33,10 @@ const CalendarAdmin: React.FC = () => {
         const bookedDate = dayjs(e.bookedDate).format('YYYY-MM-DD');
         _calendarEvents.push({
           id: e.id,
-          name: `${e.user.firstName} ${e.user.lastName}`,
-          userId: e.user.id,
-          status: e.status,
+          name: `${e?.user?.firstName} ${e?.user?.lastName}`,
+          email: e?.user?.email,
+          userId: e?.user?.id,
+          status: e?.status,
           bookedDate: bookedDate,
           bookedType: e.bookedType,
           bookedLocation: e.bookedLocation,
@@ -58,6 +59,7 @@ const CalendarAdmin: React.FC = () => {
   const updateAppointmentStatus = async (status: string, id: number) => {
     await updateUserAppointmentStatus(status, id);
     await setAppointments();
+    setOpen(false)
   }
 
   useEffect(() => {
@@ -86,7 +88,8 @@ const CalendarAdmin: React.FC = () => {
         <DialogTitle>Appointment Details</DialogTitle>
         <DialogContent>
           <Typography variant="body1">Name: <strong>{selectedEvent?.name}</strong></Typography>
-          <Typography variant="body1">Appointment Type: <strong>{selectedEvent?.bookedType}</strong></Typography>
+          <Typography variant="body1">Email: <strong>{selectedEvent?.email}</strong></Typography>
+          <Typography variant="body1">Topic/Agenda: <strong>{selectedEvent?.bookedType}</strong></Typography>
           <Typography variant="body1">Status: <strong>{selectedEvent?.status}</strong></Typography>
           <Typography variant='body1'>Date: <strong>{selectedEvent?.bookedDate}</strong></Typography>
           <Typography variant='body1'>Time: <strong>{selectedEvent?.time}</strong></Typography>

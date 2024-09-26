@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { getMyUserTest, getUserAppointment, getUserById, getUserTest, postUserScores, postUserTest, updateUserAppointmentStatus } from "../services/apiService";
 import dayjs from 'dayjs';
 import { Questionnaires } from '../constants/questionnaires';
+import PsychReportModal from './psychreports-modal';
 
 
 const adminEmail = 'decipheringminds@gmail.com';
@@ -24,12 +25,20 @@ const Patients: React.FC = () => {
   const [diagnosis, setDiagnosis] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [hideCancelled, setHideCancelled] = useState<boolean>(true);
-
+  const [modalOpen, setModalOpen] = useState(false);
+  const [psychReportMode, setPsychReportMode] = useState('');
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const handleOpen = () => setModalOpen(true);
+  const handleClose = (userId) => {
+    setModalOpen(false);
+    if(userId)
+      getAppointment(userId)
+  } 
   useEffect(() => {
     const fetchData = async () => {
       if (patientId && patientId !== '') {
         const user = await getUserById(Number(patientId));
-        if(user)
+        if (user)
           getSelectedUserInfo(user)
       }
     }
@@ -50,7 +59,6 @@ const Patients: React.FC = () => {
 
   const getAppointment = async (userId: number) => {
     const response = await getUserAppointment(userId);
-    console.log(response)
     if (response && response.length)
       setAppointments(response)
     else
@@ -74,7 +82,6 @@ const Patients: React.FC = () => {
 
       const qWithResults = response.filter((r: { userTestScores: string | any[]; }) => r.userTestScores && r.userTestScores.length > 0);
       setQuestionResults(qWithResults);
-      console.log(qWithResults)
 
       // const avQuestions = Questionnaires.filter(q => !response.some(r => r.testId == q.id));
       // setAvailableQuestionnaires(avQuestions);
@@ -165,15 +172,37 @@ const Patients: React.FC = () => {
                           <TableCell>
                             {
                               row.status === 'Confirmed' && <>
-                                <Button variant="contained" type="button" color="warning" onClick={() => updateAppointmentStatus('Cancelled', row.id)}>
+                                <Button variant="contained" type="button" color="warning" size='small' onClick={() => updateAppointmentStatus('Cancelled', row.id)}>
                                   Cancel
                                 </Button>
-                                <Button sx={{ marginLeft: "10px" }} variant="contained" type="button" color="primary" 
+                                <Button sx={{ marginLeft: "10px" }} variant="contained" size='small' type="button" color="primary"
                                   onClick={() => navigate(`/dashboard/meeting?userId=${selectedPatient?.id}&meetingNumber=${row?.meetingNumber}&meetingPassword=${row?.meetingPassword}&email=${adminEmail}&name=${adminName}&role=1`)}>
                                   Start Meeting
                                 </Button>
-                                <Button sx={{ marginLeft: "10px" }} variant="contained" type="button" color="success" onClick={() => updateAppointmentStatus('Completed', row.id)}>
+                                <Button sx={{ marginLeft: "10px" }} variant="contained" size='small' type="button" color="success" onClick={() => updateAppointmentStatus('Completed', row.id)}>
                                   Completed
+                                </Button>
+                              </>
+                            }
+                            {
+                              row.status === 'Completed' && row.psychReports.length === 0 && <>
+                                <Button sx={{ marginLeft: "10px" }} variant="contained" size='small' type="button" color="secondary" onClick={() => {
+                                  setSelectedAppointment(row);
+                                  setPsychReportMode('new')
+                                  setModalOpen(true);
+                                }}>
+                                  Create Psych Report
+                                </Button>
+                              </>
+                            }
+                            {
+                              row.status === 'Completed' && row.psychReports.length > 0 && <>
+                                <Button sx={{ marginLeft: "10px" }} variant="contained" size='small' type="button" color="secondary" onClick={() => {
+                                  setSelectedAppointment(row);
+                                  setPsychReportMode('edit')
+                                  setModalOpen(true);
+                                }}>
+                                  View Psych Report
                                 </Button>
                               </>
                             }
@@ -267,6 +296,7 @@ const Patients: React.FC = () => {
           </AccordionDetails>
         </Accordion>
       </div>
+      <PsychReportModal open={modalOpen} psychReportMode={psychReportMode} data={selectedAppointment} handleClose={handleClose} />
     </div>
   );
 };

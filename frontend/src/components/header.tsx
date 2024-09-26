@@ -10,6 +10,7 @@ import {
   ListItem,
   ListItemText,
   Button,
+  Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -59,7 +60,7 @@ const Headers: React.FC = () => {
       route: "/register",
       show: !isAuthenticated(),
     },
-    
+
   ];
 
   const onMenuClicked = (route: string) => navigate(route);
@@ -71,12 +72,21 @@ const Headers: React.FC = () => {
       onClick={toggleDrawer(false)}
       onKeyDown={toggleDrawer(false)}
     >
+      <IconButton edge="start" color="inherit" aria-label="logo">
+        <img src='/header-logo.png' alt="Logo" style={{ height: '60px' }} /> {/* Adjust height as needed */}
+      </IconButton>
+      <Divider />
       <List>
         {menuItems.filter(m => m.show).map((m, index) => (
           <ListItem key={index} onClick={() => onMenuClicked(m.route)}>
             <ListItemText primary={m.name} />
           </ListItem>
         ))}
+        {isAuthenticated() &&
+          <ListItem key={6} onClick={() => { logout(); onMenuClicked("/login") }}>
+            <ListItemText primary='Logout' />
+          </ListItem>
+        }
       </List>
     </Box>
   );
@@ -86,12 +96,14 @@ const Headers: React.FC = () => {
       {/* AppBar - Header */}
       <AppBar position="static" sx={{ background: "#F4FEFF" }}>
         <Toolbar>
-          {/* Logo */}
+          <IconButton edge="start" color="inherit" aria-label="logo">
+            <img src='/header-logo.png' alt="Logo" style={{ height: '60px' }} /> {/* Adjust height as needed */}
+          </IconButton>
           <Typography
             className="gradient-text"
             fontWeight="700"
             variant="h5"
-            sx={{ flexGrow: 1 }}
+            sx={{ flexGrow: 1, ml: '-20px' }}
           >
             DecipheringMinds
           </Typography>
@@ -99,7 +111,7 @@ const Headers: React.FC = () => {
           {/* Desktop Menu (displayed on larger screens) */}
           {!isMobile ? (
             <Box>
-              {menuItems.filter(m => m.show && (!['Register','Login'].includes(m.name))).map((m, index) => (
+              {menuItems.filter(m => m.show && (!['Register', 'Login'].includes(m.name))).map((m, index) => (
                 <Button
                   key={index}
                   sx={{ color: "black", fontWeight: "600", ml: 2 }}

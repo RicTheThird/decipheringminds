@@ -29,5 +29,7 @@ namespace DecipheringMinds.BackEnd.Models
 
         [ForeignKey("UserId")]
         public virtual ApplicationUser? User { get; set; }
+
+        public ICollection<PsychReports>? PsychReports { get; set; }
     }
 }

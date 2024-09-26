@@ -18,7 +18,7 @@ const Home: React.FC = () => {
            {/* Footer Section */}
         <Box sx={{ bgcolor: 'primary.main', py: 3, mt: 6 }}>
             <Typography color="white" textAlign="center">
-            &copy; {new Date().getFullYear()} Our Company. All rights reserved.
+            &copy; {new Date().getFullYear()} DecipheringMinds. All rights reserved.
             </Typography>
         </Box>
     </>

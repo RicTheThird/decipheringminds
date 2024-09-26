@@ -18,29 +18,9 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useSearchParams } from "react-router-dom";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { confirmEmail, register } from "../services/authService";
+import { confirmEmail, PasswordInvalidErrorMessage, register, validatePassword } from "../services/authService";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-const PasswordInvalidErrorMessage = "Password must be at least 8 characters long, contain at least one uppercase and lowercase, a number and a special character."
-function validatePassword(password: string): boolean {
-  // Minimum password length
-  const minLength = 8;
-
-  // Regular expressions for validation criteria
-  const hasUpperCase = /[A-Z]/.test(password);
-  const hasLowerCase = /[a-z]/.test(password);
-  const hasNumbers = /\d/.test(password);
-  const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-  // Validate password
-  return (
-    password.length >= minLength &&
-    hasUpperCase &&
-    hasLowerCase &&
-    hasNumbers &&
-    hasSpecialChars
-  );
-}
 
 const Register: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -55,11 +35,14 @@ const Register: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [loading, setLoading] = useState(false); // Loading state
+
   useEffect(() => {
-    // Function to fetch data
     const confirmEmailAsync = async () => {
       try {
-        await confirmEmail(token)
+        const response: any = await confirmEmail(token)
+        if (response.status > 299) {
+          setError(response?.response.data)
+        }
       } catch (error) {
         setError("Invalid token");
       }
@@ -114,12 +97,16 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if(!passwordPassed || passwordNotMatch) return;
-    console.log(formValues);
+    if (!passwordPassed || passwordNotMatch) return;
     setLoading(true)
     try {
-      await register(formValues);
-      setSubmitted(true);
+      const response: any = await register(formValues);
+      if (response.status > 299) {
+        setError(response?.response.data)
+      } else {
+        setSubmitted(true);
+      }
+      console.log(response)
     } catch (e) {
       setError('Failed to register. Please try again later.')
     } finally {
@@ -159,7 +146,7 @@ const Register: React.FC = () => {
 
 
         {error &&
-          <Typography variant="h5" color="error">
+          <Typography variant="caption" color="error" sx={{ backgroundColor: '#fbfdda', borderColor: '#dfd86e', padding: '0.8rem' }}>
             {error}
           </Typography>
         }
@@ -352,17 +339,24 @@ const Register: React.FC = () => {
                 </Grid>
               </Grid>
             </form>
-            <Box mt={2}>
+            {/* <Box mt={2}>
               <Typography variant="body2">
                 Already have an account?{" "}
                 <Link href="/login" underline="hover">
                   Login here
                 </Link>
               </Typography>
-            </Box>
+            </Box> */}
           </>
         )}
-
+        <Box mt={2}>
+          <Typography variant="body2">
+            Already have an account?{" "}
+            <Link href="/login" underline="hover">
+              Login here
+            </Link>
+          </Typography>
+        </Box>
       </Box>
     </Container>
   );

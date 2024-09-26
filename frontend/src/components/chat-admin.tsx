@@ -4,7 +4,7 @@ import { Grid, Typography } from '@mui/material';
 import { Button, ChatList, Input, MessageList } from 'react-chat-elements';
 import eventEmitter from '../services/eventEmitter';
 import { getUserProfile } from '../services/authService';
-import { seenMessages, sendMessage } from '../services/apiService';
+import { getMyMessages, seenMessages, sendMessage } from '../services/apiService';
 
 const ActiveChatKey = 'ActiveChatKey'
 function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
@@ -58,7 +58,15 @@ const ChatAdminView: React.FC = () => {
     }
   };
 
+  const getInitialMessages = async () => {
+    const response = await getMyMessages();
+    if (response && response.length > 0) {
+      handleMessage(response)
+    }
+  }
+
   useEffect(() => {
+    getInitialMessages();
     eventEmitter.on<any[]>('messagePublished', handleMessage);
     // Clean up the subscription on unmount
     return () => {
