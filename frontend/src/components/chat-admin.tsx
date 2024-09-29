@@ -70,6 +70,7 @@ const ChatAdminView: React.FC = () => {
     eventEmitter.on<any[]>('messagePublished', handleMessage);
     // Clean up the subscription on unmount
     return () => {
+      localStorage.removeItem('ActiveChatKey')
       eventEmitter.off<any[]>('messagePublished', handleMessage);
     };
   }, []);

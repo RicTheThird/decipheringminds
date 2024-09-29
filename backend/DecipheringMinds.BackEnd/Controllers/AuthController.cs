@@ -29,6 +29,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] ApplicationUser userModel)
         {
+            userModel.Active = true;
             var response = await _userService.Register(userModel);
             if (response.IsSuccess)
             {
@@ -37,7 +38,8 @@ namespace DecipheringMinds.BackEnd.Controllers
                 string base64String = Convert.ToBase64String(bytes);
                 var encodedEmail = WebUtility.UrlEncode(base64String);
 
-                var confirmUrl = $"https://decipheringminds.com/register?token={encodedEmail}";
+                //var confirmUrl = $"http://localhost:3000/register?token={encodedEmail}";
+                var confirmUrl = $"https://decipheringminds.com/register?token={encodedEmail}"; //PROD
                 try
                 {
                     await _emailService.SendEmailAsync
@@ -50,6 +52,38 @@ namespace DecipheringMinds.BackEnd.Controllers
                 }
             }
             return response.IsSuccess ? Ok() : BadRequest(response.Errors.FirstOrDefault());
+        }
+
+        [AllowAnonymous]
+        [HttpPost("register-staff/{key}")]
+        public async Task<IActionResult> RegisterStaff([FromBody] ApplicationUser userModel, string key)
+        {
+            var user = await _userService.GetUserByInvitationToken(DecodeTokenKey(key));
+            if (user != null)
+            {
+                user.EmailVerified = true;
+                user.PhoneNumber = userModel.PhoneNumber;
+                user.PasswordHash = _userService.HashPassword(userModel.PasswordHash);
+                user.FirstName = userModel.FirstName;
+                user.LastName = userModel.LastName;
+                user.BirthDate = userModel.BirthDate;
+                user.Gender = userModel.Gender;
+                user.InvitationKey = null;
+                user.ForgotPasswordKey = null;
+                user.Active = true;
+
+                try
+                {
+                    await _userService.UpdateUser(user);
+                    await _userService.SendAdminMessage(user.Id);
+                    return Ok();
+                }
+                catch (Exception e)
+                {
+                    return BadRequest("Request failed. Please try again later.");
+                }
+            }
+            return BadRequest("Invalid request. Token might have expired, please ask admin to resend invitation");
         }
 
         [AllowAnonymous]
@@ -71,7 +105,7 @@ namespace DecipheringMinds.BackEnd.Controllers
                     new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
                     new Claim(ClaimTypes.SerialNumber, user.Id.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(3),
+                Expires = DateTime.UtcNow.AddMinutes(60),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -110,8 +144,8 @@ namespace DecipheringMinds.BackEnd.Controllers
                 string base64String = Convert.ToBase64String(bytes);
                 var encodedToken = WebUtility.UrlEncode(base64String);
 
-                //var resetUrl = $"https://decipheringminds.com/reset-password?token={encodedToken}"; //PROD
-                var resetUrl = $"http://localhost:3000/forgot-password?token={encodedToken}";
+                var resetUrl = $"https://decipheringminds.com/forgot-password?token={encodedToken}"; //PROD
+                //var resetUrl = $"http://localhost:3000/forgot-password?token={encodedToken}";
                 try
                 {
                     await _emailService.SendEmailAsync
@@ -185,6 +219,24 @@ namespace DecipheringMinds.BackEnd.Controllers
             return userModel != null ? Accepted() : BadRequest("Invalid request. Token have expired.");
         }
 
+        [AllowAnonymous]
+        [HttpGet("verify-invite/{key}")]
+        public async Task<ActionResult<string>> VerifyInvitationKey(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return BadRequest("Invalid token");
+            string decodedToken = string.Empty;
+            try
+            {
+                decodedToken = DecodeTokenKey(key);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Invalid request. Token might have expired, please ask admin to resend invitation.");
+            }
+            var userModel = await _userService.GetUserByInvitationToken(decodedToken);
+            return userModel != null ? Ok(userModel.Email) : BadRequest("Invalid request. Token have expired.");
+        }
+
         [HttpGet("me")]
         [Authorize]
         public IActionResult GetUser()
@@ -193,7 +245,7 @@ namespace DecipheringMinds.BackEnd.Controllers
             return Ok(new { UserName = userName });
         }
 
-        private string DecodeTokenKey(string rawString)
+        public static string DecodeTokenKey(string rawString)
         {
             var base64Token = WebUtility.UrlDecode(rawString);
             byte[] bytes = Convert.FromBase64String(base64Token);

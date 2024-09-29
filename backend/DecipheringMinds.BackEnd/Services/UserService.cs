@@ -15,7 +15,7 @@ namespace DecipheringMinds.BackEnd.Services
 
         public async Task<ApplicationUser> Authenticate(string userName, string password)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.EmailVerified == true && x.Email == userName);
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.EmailVerified == true && x.Active == true && x.Email == userName);
             if (user == null) return null;
 
             if (VerifyPassword(password, user.PasswordHash))
@@ -36,6 +36,9 @@ namespace DecipheringMinds.BackEnd.Services
         public async Task<ApplicationUser?> GetUserByForgotPasswordToken(string token)
             => await _context.Users.SingleOrDefaultAsync(x => x.ForgotPasswordKey == token);
 
+        public async Task<ApplicationUser?> GetUserByInvitationToken(string token)
+             => await _context.Users.SingleOrDefaultAsync(x => x.InvitationKey == token);
+
         public async Task<Result> ConfirmEmail(string email)
         {
             var user = await _context.Users.SingleOrDefaultAsync(x => x.Email == email);
@@ -48,6 +51,21 @@ namespace DecipheringMinds.BackEnd.Services
         public async Task UpdateUser(ApplicationUser user)
         {
             _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SendAdminMessage(int recipientUserId)
+        {
+            var admin = await _context.Users.Where(u => u.Role == "Admin" && u.Active == true).FirstOrDefaultAsync();
+            var message = new Messages
+            {
+                SenderId = admin.Id,
+                RecipientId = recipientUserId,
+                CreatedAt = DateTime.Now,
+                IsSeen = false,
+                Message = "Welcome! Please use this messaging to talk about our patient. Thank you! - Admin"
+            };
+            _context.Messages.Add(message);
             await _context.SaveChangesAsync();
         }
 

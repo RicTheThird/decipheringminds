@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import dayjs from 'dayjs';
 import { postPsychReport } from '../services/apiService';
+import PdfGenerator from './pdf-generator';
 
 const inputStyle = {
     '& .MuiInputBase-input': {

@@ -9,7 +9,7 @@ import {
   Typography,
   Paper
 } from '@mui/material';
-import { getAllPatients } from '../services/apiService';
+import { getAllUsers } from '../services/apiService';
 
 const UserSearch = ({ setSelectedPatient }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,7 +22,7 @@ const UserSearch = ({ setSelectedPatient }) => {
   }, []);
 
   const setAppointments = async () => {
-    const response = await getAllPatients()
+    const response = await getAllUsers('Customer')
     if (response && response.length) {
       setPatients(response);
     } else {

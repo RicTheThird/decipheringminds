@@ -88,11 +88,11 @@ const Questionnaire: React.FC = () => {
 
   return (
     <div>
-      {profile?.role !== 'Admin' && <Typography variant="h6" gutterBottom color="error">
+      {!['Admin','Staff'].includes(profile?.role || '') && <Typography variant="h6" gutterBottom color="error">
           You don't have access to this page
         </Typography>
       }
-      {profile?.role === 'Admin' &&
+      {['Admin','Staff'].includes(profile?.role || '') &&
         <div>
           <Typography variant="h4" gutterBottom>
             Questionnaire

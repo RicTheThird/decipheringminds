@@ -25,6 +25,8 @@ import Meeting from "./components/meeting";
 import Chat from "./components/chat";
 import ChatAdminView from "./components/chat-admin";
 import ForgotPassword from "./components/forgot-password";
+import UserManagement from "./components/user-management";
+import StaffRegister from "./components/staff-registration";
 
 const App: React.FC = () => {
   return (
@@ -41,7 +43,7 @@ const MainRoutes: React.FC = () => {
   const location = useLocation();
 
   // Conditionally show the DrawerMenu for routes that are not login or register
-  const hideDrawerRoutes = ["/login", "/register", "/dashboard", "/forgot-password"];
+  const hideDrawerRoutes = ["/login", "/register", "/dashboard", "/forgot-password", "/staff-register"];
 
   return (
     <>
@@ -53,6 +55,7 @@ const MainRoutes: React.FC = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/staff-register" element={<StaffRegister />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/home" element={<Home />} />
         {/* Main Dashboard Route with Child Routes */}
@@ -70,6 +73,7 @@ const MainRoutes: React.FC = () => {
           <Route path="patient" element={<Patients />} />
           <Route path="meeting" element={<Meeting />} />
           <Route path="chat-view" element={<ChatAdminView />} />
+          <Route path="users" element={<UserManagement />} />
         </Route>
       </Routes>
     </>

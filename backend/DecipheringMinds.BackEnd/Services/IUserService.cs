@@ -19,6 +19,10 @@ namespace DecipheringMinds.BackEnd.Services
 
         Task<ApplicationUser?> GetUserByForgotPasswordToken(string token);
 
+        Task<ApplicationUser?> GetUserByInvitationToken(string token);
+
+        Task SendAdminMessage(int recipientUserId);
+
         string HashPassword(string password);
     }
 }

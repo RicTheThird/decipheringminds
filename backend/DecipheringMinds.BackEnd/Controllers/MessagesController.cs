@@ -96,7 +96,8 @@ namespace DecipheringMinds.BackEnd.Controllers
         {
             if (msg.FromPatient == true)
             {
-                var adminIDs = await _context.Users.Where(u => u.Role == "Admin" || u.Role == "Support").Select(u => u.Id).ToListAsync();
+                var adminIDs = await _context.Users.Where(u => u.Role == "Staff"
+                    && u.EmailVerified == true && u.Active == true).Select(u => u.Id).ToListAsync();
                 var messages = new List<Messages>();
                 foreach (var adminId in adminIDs)
                 {

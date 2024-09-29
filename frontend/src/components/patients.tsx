@@ -9,6 +9,7 @@ import { getMyUserTest, getUserAppointment, getUserById, getUserTest, postUserSc
 import dayjs from 'dayjs';
 import { Questionnaires } from '../constants/questionnaires';
 import PsychReportModal from './psychreports-modal';
+import PdfGenerator from './pdf-generator';
 
 
 const adminEmail = 'decipheringminds@gmail.com';
@@ -26,14 +27,16 @@ const Patients: React.FC = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [hideCancelled, setHideCancelled] = useState<boolean>(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pdfModalData, setPdfModalData] = useState<any>(null);
   const [psychReportMode, setPsychReportMode] = useState('');
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const handleOpen = () => setModalOpen(true);
   const handleClose = (userId) => {
     setModalOpen(false);
-    if(userId)
+    if (userId)
       getAppointment(userId)
-  } 
+  }
   useEffect(() => {
     const fetchData = async () => {
       if (patientId && patientId !== '') {
@@ -90,6 +93,28 @@ const Patients: React.FC = () => {
       setQuestionResults([]);
     }
   };
+
+  const setPdfData = (data: any) => {
+    console.log(data)
+    console.log(selectedPatient)
+    const result = data.psychReports[0] ?? null;
+    const temp = {
+      name: `${selectedPatient.firstName} ${selectedPatient.lastName}`,
+      email: selectedPatient.email,
+      gender: selectedPatient.gender,
+      birthdate: selectedPatient.birthDate,
+      appointmentDate: dayjs(data.bookedDate).format('YYYY-MM-DD'),
+      title: "Psych Report",
+      referralReason: result?.referralReason,
+      assesmentProcedureResults: result?.assesmentProcedureResults,
+      clinicalImpressionRecommendation: result?.clinicalImpressionRecommendation,
+      generalObservation: result?.generalObservation,
+      intakeInformation: result?.intakeInformation,
+      psychometricProfile: result?.psychometricProfile
+    };
+    setPdfModalData(temp);
+    setPdfModalOpen(true);
+  }
 
   return (
     <div>
@@ -204,6 +229,11 @@ const Patients: React.FC = () => {
                                 }}>
                                   View Psych Report
                                 </Button>
+                                <Button sx={{ marginLeft: "10px" }} variant="contained" size='small' type="button" color="primary" onClick={() => {
+                                  setPdfData(row)
+                                }}>
+                                  Print Psych Report
+                                </Button>
                               </>
                             }
                           </TableCell>
@@ -297,6 +327,10 @@ const Patients: React.FC = () => {
         </Accordion>
       </div>
       <PsychReportModal open={modalOpen} psychReportMode={psychReportMode} data={selectedAppointment} handleClose={handleClose} />
+
+      <PdfGenerator open={pdfModalOpen}
+        handleClose={() => setPdfModalOpen(false)}
+        data={pdfModalData} />
     </div>
   );
 };

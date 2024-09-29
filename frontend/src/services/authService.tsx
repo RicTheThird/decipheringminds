@@ -48,25 +48,40 @@ export const login = async (data: any) => {
     return response;
 };
 
+export const invite = async (user: any) => {
+    const response = await axiosInstance.post('/users/invite', user);
+    return response;
+};
+
 export const register = async (user: any) => {
     const response = await axiosInstance.post('/auth/register', user);
+    return response;
+};
+
+export const registerStaff = async (key: string, user: any) => {
+    const response = await axiosInstance.post(`/auth/register-staff/${key}`, user);
     return response;
 };
 
 export const verifyToken = async (token: string) => {
     const response = await axiosInstance.get(`/auth/verify-key/${token}`);
     return response;
-}
+};
+
+export const verifyInvite = async (token: string) => {
+    const response = await axiosInstance.get(`/auth/verify-invite/${token}`);
+    return response;
+};
 
 export const resetPassword = async (data: any) => {
     const response = await axiosInstance.post(`/auth/reset-password`, data);
     return response;
-}
+};
 
 export const forgotPassword = async (data: any) => {
     const response = await axiosInstance.post(`/auth/forgot-password`, data);
     return response;
-}
+};
 
 export const confirmEmail = async (token: string) => {
     const response = await axiosInstance.post('/auth/confirm-email', { token });
@@ -78,6 +93,8 @@ export const logout = () => {
     // Remove the token from localStorage or sessionStorage
     localStorage.removeItem('authToken');
     localStorage.removeItem('sessiontimeout');
+    localStorage.removeItem('ActiveChatKey')
+    localStorage.removeItem('userId')
 };
 
 // Function to check if the user is authenticated
@@ -132,4 +149,4 @@ export const getMeetingSignature = (meetingNumber, role, expirationSeconds) => {
     const sPayload = JSON.stringify(oPayload)
     const sdkJWT = KJUR.jws.JWS.sign('HS256', sHeader, sPayload, "G4ejgMwF3ldIm8HUGJyghroVUOrDHO3K")
     return sdkJWT
-}
+};

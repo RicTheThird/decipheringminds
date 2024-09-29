@@ -48,7 +48,7 @@ const Dashboard: React.FC = () => {
     const intervalId = setInterval(getMessages, 8000);
     // Cleanup function to clear the interval on unmount
     return () => clearInterval(intervalId);
-  }, [chat, chatIds]); 
+  }, [chat, chatIds]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -61,7 +61,12 @@ const Dashboard: React.FC = () => {
       const response = await getMyMessages();
       if (response && response.length > 0) {
         eventEmitter.emit('messagePublished', response);
+
+        const newMsgs = response.filter(c => c.senderId !== userId && !c.isSeen);
+        console.log('unread')
+        console.log(JSON.stringify(newMsgs))
         const newMsgsCount = response.filter(c => c.senderId !== userId && !c.isSeen)?.length;
+
         setUnOpenedMsgs(newMsgsCount)
         setChat(response)
         writeResponse(response.reverse())
@@ -125,7 +130,7 @@ const Dashboard: React.FC = () => {
             <ListItemText primary="Patients" />
           </ListItem>
         }
-        {profile?.role === 'Admin' &&
+        {(profile?.role === 'Admin' || profile?.role === 'Staff') &&
           <ListItem component={Link} to="chat-view">
             <ListItemIcon>
               <img
@@ -141,7 +146,7 @@ const Dashboard: React.FC = () => {
             }
           </ListItem>
         }
-        {profile?.role === 'Admin' &&
+        {(profile?.role === 'Admin' || profile?.role === 'Staff') &&
           <ListItem component={Link} to="questionnaire">
             <ListItemIcon>
               <img
@@ -254,6 +259,18 @@ const Dashboard: React.FC = () => {
           <ListItemText primary="Account" />
         </ListItem>
 
+        {profile?.role === 'Admin' &&
+          <ListItem component={Link} to="users">
+            <ListItemIcon>
+              <img
+                src="/user-management.png"
+                alt="User Management"
+                style={{ width: '23px', height: '23px' }}
+              />
+            </ListItemIcon>
+            <ListItemText primary="User Management" />
+          </ListItem>
+        }
         {/* Settings */}
         {/* <ListItem>
           <ListItemIcon>

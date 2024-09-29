@@ -54,7 +54,8 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container maxWidth={isMobile ? "xs" : "sm"}>
+    <Container >
+       {/* maxWidth={isMobile ? "" : "sm"}> */}
       <Box
         display="flex"
         flexDirection="column"

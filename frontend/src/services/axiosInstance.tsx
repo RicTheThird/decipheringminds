@@ -3,8 +3,8 @@ import { useLocation } from 'react-router-dom';
 
 // Create an Axios instance
 const axiosInstance = axios.create({
-    //baseURL: "https://decipheringmindsbackend.azurewebsites.net/api"// -- for prod
-    baseURL: "/api",
+    baseURL: "https://decipheringmindsbackend.azurewebsites.net/api"// -- for prod
+    //baseURL: "/api",
 });
 
 
@@ -29,6 +29,8 @@ axiosInstance.interceptors.response.use(response => {
     if (error.response.status === 401 && error.response.data !== 'LoginFailed') {
         localStorage.setItem('sessiontimeout', 'true');
         localStorage.removeItem('authToken')
+        localStorage.removeItem('ActiveChatKey')
+        localStorage.removeItem('userId')
         window.location.href = '/login'; // Redirect to login page
     }
     return error;
