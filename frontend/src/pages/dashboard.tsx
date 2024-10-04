@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Box, CssBaseline, Drawer, AppBar, Toolbar, Typography, IconButton, List, ListItem, ListItemIcon, ListItemText, Avatar, Divider, SpeedDialIcon } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import SettingsIcon from '@mui/icons-material/Settings';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import ChatIcon from '@mui/icons-material/Chat';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HomeIcon from '@mui/icons-material/Home';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { getUserProfile, logout } from '../services/authService';
-import AvatarInitials from '../components/avatar';
+import QuizIcon from '@mui/icons-material/Quiz';
 import { addResponseMessage, addUserMessage, Widget } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
 import { getMyMessages, sendMessage } from '../services/apiService';
 import eventEmitter from '../services/eventEmitter';
 import { CalendarIcon } from '@mui/x-date-pickers';
 const drawerWidth = 240;
-const userId = Number(localStorage.getItem('userId'))
 
 // Utility function to generate a GUID
 const generateGUID = () => {
@@ -62,10 +63,13 @@ const Dashboard: React.FC = () => {
       if (response && response.length > 0) {
         eventEmitter.emit('messagePublished', response);
 
-        const newMsgs = response.filter(c => c.senderId !== userId && !c.isSeen);
+        const newMsgs = response.filter(c => (c.recipientId === Number(localStorage.getItem('userId'))) && !c.isSeen);
         console.log('unread')
         console.log(JSON.stringify(newMsgs))
-        const newMsgsCount = response.filter(c => c.senderId !== userId && !c.isSeen)?.length;
+        const newMsgsCount = response.filter(c => (c.recipientId === Number(localStorage.getItem('userId'))) && !c.isSeen)?.length;
+
+        console.log('Unseen messages')
+        console.log(newMsgsCount)
 
         setUnOpenedMsgs(newMsgsCount)
         setChat(response)
@@ -86,7 +90,7 @@ const Dashboard: React.FC = () => {
   const writeResponse = (response: any[]) => {
     const newChat = response.filter(r => !chat.some(c => c.id === r.id))
     newChat.forEach(f => {
-      if (f.recipientId === userId) {
+      if (f.recipientId === Number(localStorage.getItem('userId'))) {
         addResponseMessage(f.message);
       } else {
         if (!chatIds.some(c => c === f.clientMessageId))
@@ -107,20 +111,26 @@ const Dashboard: React.FC = () => {
         {/* <AvatarInitials userName={profile?.name} size={80} /> */}
       </Box>
 
-      <Typography variant="h6" align="center" gutterBottom>
+      <Typography variant="h6" align="center">
         {profile?.name}
+      </Typography>
+
+      <Typography variant="body1" textAlign='center' align="center" gutterBottom>
+        {profile?.role}
       </Typography>
 
       <Divider />
 
       {/* Menu List */}
       <List>
-        <ListItem component={Link} to="home">
-          <ListItemIcon>
-            <DashboardIcon />
-          </ListItemIcon>
-          <ListItemText primary="Dashboard" />
-        </ListItem>
+        {profile?.role === 'Admin' &&
+          <ListItem component={Link} to="home">
+            <ListItemIcon>
+              <DashboardIcon />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" />
+          </ListItem>
+        }
 
         {profile?.role === 'Admin' &&
           <ListItem component={Link} to="patient">
@@ -133,11 +143,7 @@ const Dashboard: React.FC = () => {
         {(profile?.role === 'Admin' || profile?.role === 'Staff') &&
           <ListItem component={Link} to="chat-view">
             <ListItemIcon>
-              <img
-                src="/messages.png"
-                alt="Messages"
-                style={{ width: '28px', height: '28px' }}
-              />
+              <ChatIcon />
             </ListItemIcon>
             <ListItemText primary="Messages" />
             {
@@ -146,14 +152,10 @@ const Dashboard: React.FC = () => {
             }
           </ListItem>
         }
-        {(profile?.role === 'Admin' || profile?.role === 'Staff') &&
+        {(profile?.role === 'Admin') &&
           <ListItem component={Link} to="questionnaire">
             <ListItemIcon>
-              <img
-                src="/questionnaire.png"
-                alt="Questionnaire"
-                style={{ width: '30px', height: '30px' }}
-              />
+              <QuizIcon />
             </ListItemIcon>
             <ListItemText primary="Questionnaire" />
           </ListItem>
@@ -186,7 +188,7 @@ const Dashboard: React.FC = () => {
         }
 
 
-        {profile?.role === 'Admin' &&
+        {/* {profile?.role === 'Admin' &&
           <ListItem component={Link} to="psych-report">
             <ListItemIcon>
               <img
@@ -197,7 +199,7 @@ const Dashboard: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="Analytics" />
           </ListItem>
-        }
+        } */}
 
         {/* {profile?.role === 'Admin' &&
           <ListItem component={Link} to="diagnostic">
@@ -254,7 +256,7 @@ const Dashboard: React.FC = () => {
         {/* Account */}
         <ListItem component={Link} to="profile">
           <ListItemIcon>
-            <AccountCircleIcon />
+            <ManageAccountsIcon />
           </ListItemIcon>
           <ListItemText primary="Account" />
         </ListItem>
@@ -262,11 +264,7 @@ const Dashboard: React.FC = () => {
         {profile?.role === 'Admin' &&
           <ListItem component={Link} to="users">
             <ListItemIcon>
-              <img
-                src="/user-management.png"
-                alt="User Management"
-                style={{ width: '23px', height: '23px' }}
-              />
+              <PersonAddIcon />
             </ListItemIcon>
             <ListItemText primary="User Management" />
           </ListItem>

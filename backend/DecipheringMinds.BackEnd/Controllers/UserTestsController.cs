@@ -46,11 +46,28 @@ namespace DecipheringMinds.BackEnd.Controllers
         {
             var userTests = await _context.UserTests
                 .Where(u => u.UserId == userId && !u.IsDeleted)
+                .OrderByDescending(u => u.SubmittedAt)
                 .Include(u => u.UserTestScores).ToListAsync();
 
             if (userTests == null)
             {
                 return new List<UserTests>();
+            }
+
+            return userTests;
+        }
+
+        // GET: api/UserTests/UserId/5
+        [Authorize]
+        [HttpGet("unpublish")]
+        public async Task<ActionResult<IEnumerable<UserTestScores>>> GetUnpublishTestResult()
+        {
+            var userTests = await _context.UserTestScores
+                .Where(u => !u.IsPublished).ToListAsync();
+
+            if (userTests == null)
+            {
+                return new List<UserTestScores>();
             }
 
             return userTests;
@@ -70,6 +87,28 @@ namespace DecipheringMinds.BackEnd.Controllers
             }
 
             return userTests;
+        }
+
+        //[Authorize]
+        [HttpGet("analytics/days/{previousDayCount}")]
+        public async Task<ActionResult<IEnumerable<Analytics>>> GetPsychResultAnalytics(int previousDayCount)
+        {
+            DateTime thirtyDaysAgo = DateTime.Now.AddDays(-previousDayCount);
+
+            var scoreSummary = await _context.UserTests
+                .Where(ut => ut.SubmittedAt >= thirtyDaysAgo)
+                .SelectMany(ut => ut.UserTestScores,
+                            (ut, score) => new { score.ScoreType, score.ScoreInterpretation })
+                .GroupBy(x => new { x.ScoreType, x.ScoreInterpretation })
+                .Select(g => new ScoreSummary
+                {
+                    ScoreType = g.Key.ScoreType,
+                    ScoreInterpretation = g.Key.ScoreInterpretation,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            return Ok(scoreSummary);
         }
 
         // PUT: api/UserTests/5
@@ -210,5 +249,18 @@ namespace DecipheringMinds.BackEnd.Controllers
         {
             return _context.UserTests.Any(e => e.Id == id);
         }
+    }
+
+    public class Analytics
+    {
+        public string ScoreType { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class ScoreSummary
+    {
+        public string ScoreType { get; set; }
+        public string ScoreInterpretation { get; set; }
+        public int Count { get; set; }
     }
 }

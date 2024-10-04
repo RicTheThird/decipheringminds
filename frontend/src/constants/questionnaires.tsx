@@ -233,7 +233,7 @@ export const Questionnaires = [
       {
         start: 27,
         end: 40,
-        value: "High Perceived Stress"
+        value: "High Stress"
       }
     ],
     scoreDescription: "Stress Severity",
@@ -349,17 +349,17 @@ export const Questionnaires = [
       {
         start: 0,
         end: 17,
-        value: "Mild Anxiety"
+        value: "Minimal Anxiety"
       },
       {
         start: 18,
         end: 24,
-        value: "Mild to Moderate Anxiety"
+        value: "Mild Anxiety"
       },
       {
         start: 25,
         end: 30,
-        value: "Moderate to Severe Anxiety"
+        value: "Moderate Anxiety"
       },
       {
         start: 31,

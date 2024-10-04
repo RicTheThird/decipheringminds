@@ -35,6 +35,8 @@ const ChatAdminView: React.FC = () => {
     let chatList: any[] = []
     for (const key in groupedUsers) {
       const lastMessage = groupedUsers[key].find(g => g.senderName === key)
+      console.log('lastMessage')
+      console.log(lastMessage)
       const allmsg = groupedUsers[key];
       if (Number(localStorage.getItem('userId')) !== lastMessage.senderId) {
         const initial1 = key.split(' ')[0].toUpperCase()
@@ -51,6 +53,9 @@ const ChatAdminView: React.FC = () => {
       }
     }
     setMessagesRaw(data)
+    
+    console.log('chatList')
+    console.log(chatList)
     setChatList(chatList)
     const activeChat = localStorage.getItem(ActiveChatKey)
     if (activeChat) {
@@ -118,7 +123,8 @@ const ChatAdminView: React.FC = () => {
   const setSelectedChat = async (a, b, c, raw) => {
     const temp: any[] = []
     setActiveChat(a);
-    await seenMessages({ recipientId: a.id })
+    console.log(a)
+    await seenMessages({ senderId: a.id })
     a.unread = 0
     localStorage.removeItem(ActiveChatKey);
     localStorage.setItem(ActiveChatKey, JSON.stringify(a));

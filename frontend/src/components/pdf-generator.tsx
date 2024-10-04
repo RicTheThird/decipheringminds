@@ -32,7 +32,32 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 15,
     marginBottom: 5,
-  }
+  },
+  table: {
+    width: 'auto',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: '#000',
+  },
+  tableRow: {
+    margin: 'auto',
+    flexDirection: 'row',
+  },
+  tableCol: {
+    width: '25%',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: '#000',
+    padding: 5,
+    textAlign: 'center',
+  },
+  theader: {
+    backgroundColor: '#f0f0f0',
+  },
+  cell: {
+    margin: 'auto',
+    fontSize: 10,
+  },
 });
 
 const modalStyle = {
@@ -50,7 +75,7 @@ const modalStyle = {
 };
 
 // Create a PDF Document
-const MyDocument = ({ data }) => (
+const MyDocument = ({ data, assessmentReport }) => (
   <Document>
     <Page size="A4" style={styles.page}>
       {/* <Image src='/header-logo.png' style={{ width: 150, height: 100 }} /> Adjust size as needed */}
@@ -74,47 +99,64 @@ const MyDocument = ({ data }) => (
       <View style={styles.section}>
         <Text style={styles.subheader}>Intake Information</Text>
         <Text style={styles.content}>
-        {data?.intakeInformation}
+          {data?.intakeInformation}
         </Text>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.subheader}>General Observation</Text>
         <Text style={styles.content}>
-        {data?.generalObservation}
+          {data?.generalObservation}
         </Text>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.subheader}>Assessment Procedure and Results</Text>
         <Text style={styles.content}>
-        {data?.assesmentProcedureResults}
+          {data?.assesmentProcedureResults}
         </Text>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.subheader}>Psychometric Profile</Text>
         <Text style={styles.content}>
-        {data?.psychometricProfile}
+          {data?.psychometricProfile}
         </Text>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.subheader}>Clinical Impression and Recommendation</Text>
         <Text style={styles.content}>
-        {data?.clinicalImpressionRecommendation}
+          {data?.clinicalImpressionRecommendation}
         </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.subheader}>Assessment Result</Text>
+        <View style={styles.table}>
+          <View style={[styles.tableRow, styles.theader]}>
+            <View style={styles.tableCol}><Text style={styles.cell}>Test Name</Text></View>
+            <View style={styles.tableCol}><Text style={styles.cell}>Raw Score</Text></View>
+            <View style={styles.tableCol}><Text style={styles.cell}>Interpretation</Text></View>
+            <View style={styles.tableCol}><Text style={styles.cell}>Date taken</Text></View>
+          </View>
+
+          {/* Data Rows */}
+          {assessmentReport.map((a, rowIndex) => (
+            <View style={styles.tableRow} key={rowIndex}>
+              <View style={styles.tableCol}><Text style={styles.cell}>{a.title}</Text></View>
+              <View style={styles.tableCol}><Text style={styles.cell}>{a.score}</Text></View>
+              <View style={styles.tableCol}><Text style={styles.cell}>{a.interpretation}</Text></View>
+              <View style={styles.tableCol}><Text style={styles.cell}>{a.submittedDate}</Text></View>
+            </View>
+          ))}
+        </View>
       </View>
     </Page>
   </Document>
 );
 
-const PdfGenerator = ({ open, handleClose, data }) => {
-  const data1 = {
-    title: "Sample PDF Document",
-    content: "This is a sample PDF created using react-pdf in React."
-  };
-
+const PdfGenerator = ({ open, handleClose, data, assesmentReport }) => {
   return (
     <Modal open={open} onClose={handleClose}>
       <Box sx={modalStyle}>
@@ -122,7 +164,7 @@ const PdfGenerator = ({ open, handleClose, data }) => {
           Print Preview
         </Typography>
         <PDFViewer style={{ width: '100%', height: '68vh' }}>
-          <MyDocument data={data} />
+          <MyDocument data={data} assessmentReport={assesmentReport} />
         </PDFViewer>
         <Button onClick={handleClose} variant="contained" color="secondary">
           Close

@@ -132,7 +132,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         [HttpPost("seen")]
         public async Task<ActionResult> SeenAll(MessageDTO msg)
         {
-            var messages = await _context.Messages.Where(m => m.RecipientId == GetUserId() && m.SenderId == msg.RecipientId).ToListAsync();
+            var messages = await _context.Messages.Where(m => m.RecipientId == GetUserId() && m.SenderId == msg.SenderId).ToListAsync();
             foreach (var item in messages)
             {
                 item.IsSeen = true;
@@ -167,6 +167,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         public string? Message { get; set; }
         public bool? FromPatient { get; set; } = false;
         public int? RecipientId { get; set; }
+        public int? SenderId { get; set;  }
         public string? ClientMsgId { get; set; }
     }
 }

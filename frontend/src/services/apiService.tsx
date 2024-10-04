@@ -17,6 +17,16 @@ export const getMyUserTest = async () => {
     return response.data;
 };
 
+export const getUnpublishUserTestScore = async () => {
+    const response = await axiosInstance.get('/usertests/unpublish');
+    return response.data;
+};
+
+export const getUserTestsAnalytics = async (previousDays: number) => {
+    const response = await axiosInstance.get(`/usertests/analytics/days/${previousDays}`);
+    return response.data;
+};
+
 export const getUserTest = async (id: number) => {
     const response = await axiosInstance.get(`/usertests/user/${id}`);
     return response.data;

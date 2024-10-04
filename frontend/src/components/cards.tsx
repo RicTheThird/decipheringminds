@@ -18,7 +18,7 @@ const Cards: React.FC = () => {
       description: "You can connect directly, quickly and easily, and there is no need to doubt the quality of the consultation and treatment offered.",
     },
     {
-      title: "Anonymous Identity",
+      title: "Personalized Approach",
       image: "/chat.png",
       description: "Talk about the health complaints you are experiencing and don't hesitate to ask about the proper treatment",
     },

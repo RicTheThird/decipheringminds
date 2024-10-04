@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, FormControlLabel, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, withStyles } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, FormControlLabel, Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, withStyles } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import UserSearch from './user-search';
 
@@ -11,6 +11,19 @@ import { Questionnaires } from '../constants/questionnaires';
 import PsychReportModal from './psychreports-modal';
 import PdfGenerator from './pdf-generator';
 
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '80vw',
+  height: '80vh',
+  overflow: 'auto',
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 const adminEmail = 'decipheringminds@gmail.com';
 const adminName = 'Deciphering Minds';
@@ -29,8 +42,11 @@ const Patients: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [pdfModalData, setPdfModalData] = useState<any>(null);
+  const [psychTestOpen, setPsychTestOpen] = useState(false);
   const [psychReportMode, setPsychReportMode] = useState('');
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [selectedAssessment, setSelectedAssessment] = useState<string[]>([]);
+  const [assessmentReport, setAssessmentReport] = useState<string[]>([]);
   const handleOpen = () => setModalOpen(true);
   const handleClose = (userId) => {
     setModalOpen(false);
@@ -53,6 +69,24 @@ const Patients: React.FC = () => {
     getSelectedUserTest(user.id)
     getAppointment(user.id)
   }
+
+  const onSelect = (event: any, qId: any) => {
+    if (event.target.checked)
+      setSelectedAssessment((prevItems) => [...prevItems, qId]);
+    else
+      setSelectedAssessment((prevItems) => prevItems.filter(item => item !== qId));
+  };
+
+  const handleSelectAllClick = (event) => {
+    if (event.target.checked) {
+      if (questionResults.length > 0) {
+        const newSelecteds = questionResults.map(n => n.userTestScores.map(s => s.id));
+        setSelectedAssessment(newSelecteds);
+      }
+      return;
+    }
+    setSelectedAssessment([]);
+  };
 
   const removeSelectedUser = () => {
     setSelectedPatient(null);
@@ -77,6 +111,27 @@ const Patients: React.FC = () => {
   const updateAppointmentStatus = async (status: string, id: number) => {
     await updateUserAppointmentStatus(status, id);
     await getAppointment(selectedPatient.id)
+  }
+
+  const getAssessmentReport = () => {
+    if (selectedAssessment.length > 0) {
+      const temp: any[] = []
+      questionResults.map(q => {
+        q.userTestScores.map(u => {
+          if(selectedAssessment.includes(u.id)) {
+            temp.push({
+              title: Questionnaires.find(qs => qs.id === q.testId)?.title,
+              score: u.score,
+              interpretation: u.scoreInterpretation,
+              submittedDate: dayjs(q?.submittedAt).format('YYYY-MM-DD')
+            })
+          }
+        })
+      })
+      setAssessmentReport(temp);
+    } else {
+      setAssessmentReport([]);
+    }
   }
 
   const getSelectedUserTest = async (userId: number) => {
@@ -113,7 +168,6 @@ const Patients: React.FC = () => {
       psychometricProfile: result?.psychometricProfile
     };
     setPdfModalData(temp);
-    setPdfModalOpen(true);
   }
 
   return (
@@ -231,6 +285,7 @@ const Patients: React.FC = () => {
                                 </Button>
                                 <Button sx={{ marginLeft: "10px" }} variant="contained" size='small' type="button" color="primary" onClick={() => {
                                   setPdfData(row)
+                                  setPsychTestOpen(true)
                                 }}>
                                   Print Psych Report
                                 </Button>
@@ -288,7 +343,7 @@ const Patients: React.FC = () => {
                             <TableCell>{Questionnaires.find(q => q.id === row.testId)?.title}</TableCell>
                             <TableCell>{s.score}</TableCell>
                             <TableCell>{s.scoreInterpretation}</TableCell>
-                            <TableCell>{row?.submittedAt}</TableCell>
+                            <TableCell>{dayjs(row?.submittedAt).format('YYYY-MM-DD')}</TableCell>
                             <TableCell>{s.isPublished ? 'Yes' : 'No'}</TableCell>
                             <TableCell>{!s.isPublished &&
                               <Button fullWidth variant="contained" type="button" color="primary" onClick={() => publishTestResult(row.id, s)}>
@@ -330,7 +385,68 @@ const Patients: React.FC = () => {
 
       <PdfGenerator open={pdfModalOpen}
         handleClose={() => setPdfModalOpen(false)}
-        data={pdfModalData} />
+        data={pdfModalData} assesmentReport={assessmentReport} />
+
+
+      <Modal open={psychTestOpen} onClose={() => setPsychTestOpen(false)}>
+        <Box sx={modalStyle}>
+          <Typography variant="h6" component="h2" gutterBottom>
+            Select assesment result to include on the report.
+          </Typography>
+          <TableContainer>
+            <Table stickyHeader>
+              <TableHead >
+                <TableRow className='root'>
+                  <TableCell padding="checkbox">
+                    {/* <Checkbox
+                      color="primary"
+                      //indeterminate={selected.length > 0 && selected.length < data.length}
+                      checked={selectedAssessment.length === questionResults.length}
+                      onChange={handleSelectAllClick}
+                    /> */}
+                  </TableCell>
+                  <TableCell>Test Name</TableCell>
+                  <TableCell>Raw Score</TableCell>
+                  <TableCell>Interpretation</TableCell>
+                  <TableCell>Submitted Date</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {questionResults.map((row) =>
+                  row.userTestScores.map((s) => {
+                    const isItemSelected = selectedAssessment.indexOf(s.id) !== -1;
+                    return (
+                      <TableRow
+                        hover
+                        role="checkbox"
+                        aria-checked={row.selected}
+                        tabIndex={-1}
+                        key={s.id}
+                      >
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            color="primary"
+                            checked={isItemSelected}
+                            onChange={(e) => onSelect(e, s.id)}
+                          />
+                        </TableCell>
+                        <TableCell>{Questionnaires.find(q => q.id === row.testId)?.title}</TableCell>
+                        <TableCell>{s.score}</TableCell>
+                        <TableCell>{s.scoreInterpretation}</TableCell>
+                        <TableCell>{dayjs(row?.submittedAt).format('YYYY-MM-DD')}</TableCell>
+
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Button onClick={() => { setPsychTestOpen(false); getAssessmentReport(); setPdfModalOpen(true)}} variant="contained" color="primary">
+            Print
+          </Button>
+        </Box>
+      </Modal>
     </div>
   );
 };
