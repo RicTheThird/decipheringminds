@@ -12,15 +12,22 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
+  Modal,
 } from "@mui/material";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useSearchParams } from "react-router-dom";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { confirmEmail, PasswordInvalidErrorMessage, register, validatePassword } from "../services/authService";
+import {
+  confirmEmail,
+  PasswordInvalidErrorMessage,
+  register,
+  validatePassword,
+} from "../services/authService";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-
 
 const Register: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -31,7 +38,7 @@ const Register: React.FC = () => {
   const [showPassword2, setShowPassword2] = useState(false);
   const handleClickShowPassword2 = () => setShowPassword2(!showPassword2);
   const handleMouseDownPassword2 = () => setShowPassword2(!showPassword2);
-  const token = searchParams.get('token') || '';
+  const token = searchParams.get("token") || "";
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [loading, setLoading] = useState(false); // Loading state
@@ -39,9 +46,9 @@ const Register: React.FC = () => {
   useEffect(() => {
     const confirmEmailAsync = async () => {
       try {
-        const response: any = await confirmEmail(token)
+        const response: any = await confirmEmail(token);
         if (response.status > 299) {
-          setError(response?.response.data)
+          setError(response?.response.data);
         }
       } catch (error) {
         setError("Invalid token");
@@ -61,10 +68,29 @@ const Register: React.FC = () => {
     passwordConfirm: "",
   });
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [passwordNotMatch, setPasswordNotMatch] = useState(false);
   const [passwordPassed, setPasswordPassed] = useState(true);
   const [isSubmitted, setSubmitted] = useState(false);
+
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const modalStyle = {
+    maxHeight: "85vh",
+    overflowY: "scroll",
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues({
@@ -72,18 +98,20 @@ const Register: React.FC = () => {
       [e.target.name]: e.target.value,
     });
 
-    if (e.target.name === 'passwordHash') {
-      setPasswordPassed(e.target.value !== '' ? validatePassword(e.target.value) : true)
-      if (formValues.passwordConfirm != '' && e.target.value !== '') {
-        setPasswordNotMatch(e.target.value !== formValues.passwordConfirm)
+    if (e.target.name === "passwordHash") {
+      setPasswordPassed(
+        e.target.value !== "" ? validatePassword(e.target.value) : true
+      );
+      if (formValues.passwordConfirm != "" && e.target.value !== "") {
+        setPasswordNotMatch(e.target.value !== formValues.passwordConfirm);
       }
     }
 
-    if (e.target.name === 'passwordConfirm') {
-      if (e.target.value !== formValues.passwordHash && e.target.value !== '') {
-        setPasswordNotMatch(true)
+    if (e.target.name === "passwordConfirm") {
+      if (e.target.value !== formValues.passwordHash && e.target.value !== "") {
+        setPasswordNotMatch(true);
       } else {
-        setPasswordNotMatch(false)
+        setPasswordNotMatch(false);
       }
     }
   };
@@ -98,19 +126,19 @@ const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passwordPassed || passwordNotMatch) return;
-    setLoading(true)
+    setLoading(true);
     try {
       const response: any = await register(formValues);
       if (response.status > 299) {
-        setError(response?.response.data)
+        setError(response?.response.data);
       } else {
         setSubmitted(true);
       }
-      console.log(response)
+      console.log(response);
     } catch (e) {
-      setError('Failed to register. Please try again later.')
+      setError("Failed to register. Please try again later.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -143,31 +171,47 @@ const Register: React.FC = () => {
           />
         </Box>
 
-
-
-        {error &&
-          <Typography variant="caption" color="error" sx={{ backgroundColor: '#fbfdda', borderColor: '#dfd86e', padding: '0.8rem' }}>
+        {error && (
+          <Typography
+            variant="caption"
+            color="error"
+            sx={{
+              backgroundColor: "#fbfdda",
+              borderColor: "#dfd86e",
+              padding: "0.8rem",
+            }}
+          >
             {error}
           </Typography>
-        }
+        )}
         {token && !error && (
           <>
-            <Typography variant="h5" className="gradient-text"
-              style={{ fontWeight: 700 }} gutterBottom>
+            <Typography
+              variant="h5"
+              className="gradient-text"
+              style={{ fontWeight: 700 }}
+              gutterBottom
+            >
               Email successfully verified
             </Typography>
 
             {/* Confirmation Message */}
             <Typography variant="body1" color="textSecondary" gutterBottom>
-              Thank you! You can now login <Link href="/login" underline="hover">here
+              Thank you! You can now login{" "}
+              <Link href="/login" underline="hover">
+                here
               </Link>
             </Typography>
           </>
         )}
         {isSubmitted && !token && (
           <>
-            <Typography variant="h5" className="gradient-text"
-              style={{ fontWeight: 700 }} gutterBottom>
+            <Typography
+              variant="h5"
+              className="gradient-text"
+              style={{ fontWeight: 700 }}
+              gutterBottom
+            >
               Registration Successful!
             </Typography>
 
@@ -180,14 +224,15 @@ const Register: React.FC = () => {
         )}
 
         {!isSubmitted && !token && (
-          <><Typography
-            variant="h4"
-            className="gradient-text"
-            style={{ fontWeight: 700 }}
-            gutterBottom
-          >
-            DecipheringMinds
-          </Typography>
+          <>
+            <Typography
+              variant="h4"
+              className="gradient-text"
+              style={{ fontWeight: 700 }}
+              gutterBottom
+            >
+              DecipheringMinds
+            </Typography>
             <form onSubmit={handleSubmit}>
               <Grid container spacing={3} paddingTop={5}>
                 {/* First Name */}
@@ -228,7 +273,7 @@ const Register: React.FC = () => {
                           <TextField fullWidth required {...textFieldProps} />
                         ),
                       }}
-                    //slots={(params) => <TextField {...params} fullWidth required />}
+                      //slots={(params) => <TextField {...params} fullWidth required />}
                     />
                   </LocalizationProvider>
                 </Grid>
@@ -276,10 +321,13 @@ const Register: React.FC = () => {
                     onChange={handleInputChange}
                     variant="outlined"
                     error={!passwordPassed}
-                    helperText={!passwordPassed ? PasswordInvalidErrorMessage : ''}
+                    helperText={
+                      !passwordPassed ? PasswordInvalidErrorMessage : ""
+                    }
                     fullWidth
                     required
-                    InputProps={{ // <-- This is where the toggle button is added.
+                    InputProps={{
+                      // <-- This is where the toggle button is added.
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
@@ -290,7 +338,7 @@ const Register: React.FC = () => {
                             {showPassword ? <Visibility /> : <VisibilityOff />}
                           </IconButton>
                         </InputAdornment>
-                      )
+                      ),
                     }}
                   />
                 </Grid>
@@ -304,11 +352,14 @@ const Register: React.FC = () => {
                     value={formValues.passwordConfirm}
                     onChange={handleInputChange}
                     error={passwordNotMatch}
-                    helperText={passwordNotMatch ? 'Password does not match' : ''}
+                    helperText={
+                      passwordNotMatch ? "Password does not match" : ""
+                    }
                     variant="outlined"
                     fullWidth
                     required
-                    InputProps={{ // <-- This is where the toggle button is added.
+                    InputProps={{
+                      // <-- This is where the toggle button is added.
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
@@ -319,11 +370,22 @@ const Register: React.FC = () => {
                             {showPassword2 ? <Visibility /> : <VisibilityOff />}
                           </IconButton>
                         </InputAdornment>
-                      )
+                      ),
                     }}
                   />
                 </Grid>
-
+                <Grid item xs={12}>
+                  <Typography variant="body2">
+                    By registering, you agree to our{" "}
+                    <Link
+                      component="button"
+                      variant="body2"
+                      onClick={handleOpen}
+                    >
+                      Privacy Policy
+                    </Link>
+                  </Typography>
+                </Grid>
                 {/* Submit Button */}
                 <Grid item xs={12}>
                   <Button
@@ -358,6 +420,140 @@ const Register: React.FC = () => {
           </Typography>
         </Box>
       </Box>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="privacy-policy-title"
+        aria-describedby="privacy-policy-description"
+      >
+        <Box sx={modalStyle}>
+          <Typography id="privacy-policy-title" variant="h4" component="h2">
+            Privacy Policy
+          </Typography>
+          <Typography id="privacy-policy-description" sx={{ mt: 2 }}>
+            DecipheringMinds.com (referred to as "we," "us," or "our") values
+            your privacy and is committed to protecting your personal
+            information. This Privacy Policy outlines the types of information
+            we collect, how we use it, and your rights regarding that
+            information.
+          </Typography>
+          <Typography variant="h6" component="h2" sx={{ mt: 2 }}>
+            1. Information We Collect
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            When you register or interact with DecipheringMinds.com, we collect
+            the following types of information:
+            <ul>
+              <li>
+                <strong>Personal Information: </strong>This includes your name,
+                email address, username, and any other information you
+                voluntarily provide when creating an account.
+              </li>
+              <li>
+                <strong>Usage Data: </strong>We collect data on how you interact
+                with our platform, including your browsing history, IP address,
+                device information, and the time you spend on the platform.
+              </li>
+              <li>
+                <strong>Cookies and Tracking Technologies:</strong>We use
+                cookies and similar tracking technologies to enhance your
+                experience on the platform. You can control your cookie
+                preferences in your browser settings.
+              </li>
+            </ul>
+          </Typography>
+          <Typography variant="h6" component="h2" sx={{ mt: 2 }}>
+            2. How We Use Your Information
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            We use the information we collect to:
+            <ul>
+              <li>
+                Provide and maintain our services, including user registration
+                and profile management.
+              </li>
+              <li>Customize and enhance your user experience.</li>
+              <li>
+                Communicate with you, including sending notifications and
+                updates related to your account or our services.
+              </li>
+              <li>Analyze site usage to improve performance and features.</li>
+              <li>
+                Ensure the security of our platform and detect, prevent, and
+                address technical issues.
+              </li>
+            </ul>
+          </Typography>
+          <Typography variant="h6" component="h2" sx={{ mt: 2 }}>
+            3. Sharing Your Information
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            We do not sell or share your personal information with third parties
+            for marketing purposes. However, we may share your data with:
+            <ul>
+              <li>
+                <strong>Service Providers: </strong> Third-party companies who
+                assist us in providing and maintaining our services (e.g.,
+                hosting services, analytics).
+              </li>
+              <li>
+                <strong>Legal Requirements: </strong>We may disclose your
+                information when required by law or to comply with legal
+                processes, such as in response to a court order or governmental
+                request.
+              </li>
+            </ul>
+          </Typography>
+          <Typography variant="h6" component="h2" sx={{ mt: 2 }}>
+            4. Your Rights
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            Depending on your location, you may have the following rights
+            regarding your personal data:
+            <ul>
+              <li>
+                <strong>Access and Correction: </strong> You can access, update,
+                or correct the personal information we hold about you through
+                your account settings.
+              </li>
+              <li>
+                <strong>Data Deletion: </strong>You may request the deletion of
+                your personal data by contacting us at
+                decipheringminds@gmail.com.
+              </li>
+
+              <li>
+                <strong>Opt-Out of Marketing: </strong>You may opt out of
+                receiving promotional communications by following the
+                unsubscribe link in the emails we send or updating your account
+                settings.
+              </li>
+            </ul>
+          </Typography>
+          <Typography variant="h6" component="h2" sx={{ mt: 2 }}>
+            5. Retention of Data
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            We will retain your personal data only for as long as necessary to
+            fulfill the purposes outlined in this Privacy Policy or as required
+            by law.
+          </Typography>
+          <Typography variant="h6" component="h2" sx={{ mt: 2 }}>
+            6. Contact Us
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            If you have any questions or concerns about this Privacy Policy or
+            our practices, please contact us at:<br />
+            <br />
+            <strong>DecipheringMinds.com </strong><br/>
+            Email: decipheringminds@gmail.com <br/>
+          </Typography>
+          <br />
+          <Button onClick={handleClose} sx={{ mt: 2 }} variant="contained">
+            Close
+          </Button>
+        </Box>
+      </Modal>
     </Container>
   );
 };
