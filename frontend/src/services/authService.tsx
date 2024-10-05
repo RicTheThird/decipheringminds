@@ -44,6 +44,10 @@ export const login = async (data: any) => {
         // Save the token to localStorage or sessionStorage
         localStorage.setItem('authToken', response.data.token);
         localStorage.removeItem('sessiontimeout');
+
+        // const decoded = decodeJwt<UserProfile>(response.data.token).decodedToken;
+        // localStorage.setItem('userId', decoded?.certserialnumber || '')
+        // localStorage.setItem('role', decoded?.role || '')
     }
     return response;
 };
@@ -95,6 +99,7 @@ export const logout = () => {
     localStorage.removeItem('sessiontimeout');
     localStorage.removeItem('ActiveChatKey')
     localStorage.removeItem('userId')
+    localStorage.removeItem('role')
 };
 
 // Function to check if the user is authenticated
@@ -103,10 +108,15 @@ export const isAuthenticated = () => {
     return !!localStorage.getItem('authToken');
 };
 
+export const getRole = () => {
+    return localStorage.getItem('role') ?? '';
+}
+
 export const getUserProfile = () => {
     if (isAuthenticated()) {
         const decoded = decodeJwt<UserProfile>(localStorage.getItem('authToken') || '').decodedToken;
         localStorage.setItem('userId', decoded?.certserialnumber || '')
+        localStorage.setItem('role', decoded?.role || '')
         let avatarBgColor = ''
         if (localStorage.getItem('avatarColor')) {
             avatarBgColor = localStorage.getItem('avatarColor') ?? getRandomHexColor()

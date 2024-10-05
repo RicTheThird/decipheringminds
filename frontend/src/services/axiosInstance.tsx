@@ -31,6 +31,7 @@ axiosInstance.interceptors.response.use(response => {
         localStorage.removeItem('authToken')
         localStorage.removeItem('ActiveChatKey')
         localStorage.removeItem('userId')
+        localStorage.removeItem('role')
         window.location.href = '/login'; // Redirect to login page
     }
     return error;

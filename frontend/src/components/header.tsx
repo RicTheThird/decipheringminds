@@ -18,9 +18,12 @@ import { useTheme } from "@mui/material/styles";
 import { Link, useNavigate } from "react-router-dom";
 import Dashboard from "../pages/dashboard";
 import Home from "../pages/home";
-import { isAuthenticated, logout } from "../services/authService";
+import { getRole, getUserProfile, isAuthenticated, logout } from "../services/authService";
 
 const Headers: React.FC = () => {
+
+  getUserProfile();
+  
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
@@ -42,7 +45,7 @@ const Headers: React.FC = () => {
   const menuItems = [
     {
       name: "Dashboard",
-      route: "/dashboard/home",
+      route:  getRole() === 'Admin' ? "/dashboard/home" : (getRole() === 'Staff' ? "/dashboard/chat-view" : "/dashboard/calendar"),
       show: isAuthenticated(),
     },
     {
