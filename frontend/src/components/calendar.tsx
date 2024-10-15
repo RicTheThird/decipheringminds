@@ -4,8 +4,9 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { useNavigate } from 'react-router-dom';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { getActiveAppointmentByDate, getMyAppointment, postUserAppointment, updateUserAppointmentStatus } from '../services/apiService';
-import { getUserProfile } from '../services/authService';
+import { getActiveAppointmentByDate, getBlockOffTime, getMyAppointment, postUserAppointment, updateUserAppointmentStatus } from '../services/apiService';
+import { getUserProfile, myProfile } from '../services/authService';
+import PdfGenerator from './pdf-generator';
 
 const generateTimeRanges = (startHour, endHour) => {
   const timeRanges: string[] = [];
@@ -17,19 +18,29 @@ const generateTimeRanges = (startHour, endHour) => {
   return timeRanges;
 };
 
+const timeRanges = generateTimeRanges(8, 17); // 9 AM to 5 PM
+
+const sixMosFromNow = dayjs().add(6, 'months');
+
 const BookingPage = () => {
   const navigate = useNavigate();
   const [dateTime, setDateTime] = useState(dayjs());
   const [description, setDescription] = useState('');
   const [selectedTimeRange, setSelectedTimeRange] = useState('');
+  const [pdfModalData, setPdfModalData] = useState<any>(null);
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [userAppointments, setUserAppointments] = useState<any[]>([])
   const [unAvailableTimes, setUnAvailableTimes] = useState<any[]>([])
+  const [blockDateTimes, setBlockDateTimes] = useState<any[]>([]);
+  const [unavailableDates, setUnAvailableDates] = useState<string[]>([])
+  const [unavailableTimeRange, setUnAvailableTimeRange] = useState<any[]>([]);
   const [loading, setLoading] = useState(false); // Loading state
-  //const [profile, setUserProfile] = useState<any>(null)
+  const [profile, setUserProfile] = useState<any>(null)
 
-  const profile = getUserProfile();
 
   useEffect(() => {
+    //getBlockDates()
+    getMyProfile();
     setAppointments();
     handleDateChange(dayjs())
   }, []);
@@ -43,11 +54,15 @@ const BookingPage = () => {
     }
   };
 
+  const getMyProfile = async () => {
+    const response = await myProfile();
+    setUserProfile(response);
+  }
+
   const handleTimeRangeChange = (timeRange) => {
     setSelectedTimeRange(timeRange);
   };
 
-  const timeRanges = generateTimeRanges(9, 17); // 9 AM to 5 PM
 
   const handleAddBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,14 +88,52 @@ const BookingPage = () => {
     }
   };
 
+  const setPdfData = async (data: any) => {
+    const result = data.psychReports[0] ?? null;
+    const temp = {
+      name: `${profile.firstName} ${profile.lastName}`,
+      email: profile.email,
+      gender: profile.gender,
+      birthdate: profile.birthDate,
+      appointmentDate: dayjs(data.bookedDate).format('YYYY-MM-DD'),
+      title: "Psych Report",
+      referralReason: result?.referralReason,
+      assesmentProcedureResults: result?.assesmentProcedureResults,
+      clinicalImpressionRecommendation: result?.clinicalImpressionRecommendation,
+      generalObservation: result?.generalObservation,
+      intakeInformation: result?.intakeInformation,
+      psychometricProfile: result?.psychometricProfile
+    };
+    setPdfModalData(temp);
+  }
+
   const updateAppointmentStatus = async (status: string, id: number) => {
     await updateUserAppointmentStatus(status, id);
     await setAppointments();
   }
 
+  const disableBlockDates = (date) => {
+    return unavailableDates.some(disabledDate =>
+      dayjs(disabledDate).isSame(dayjs(date))
+    );
+  }
+
   const handleDateChange = async (date: any) => {
-    const response = await getActiveAppointmentByDate(dayjs(date).toDate());
-    let time: any[] = []
+    const selectedDate = dayjs(date).format('YYYY-MM-DD');
+    const response = await getActiveAppointmentByDate(selectedDate);
+    const blockDateTime = await getBlockDates();
+    if (blockDateTime) {
+      const blockOffDate = blockDateTime.filter(b => dayjs(b.blockedDate).isSame(dayjs(date), 'day'))
+      if (blockOffDate) {
+        const temp = blockOffDate.map(m => ({ startTime: m.startTime, endTime: m.endTime }))
+        setUnAvailableTimeRange(temp)
+      }
+      else
+        setUnAvailableTimeRange([]);
+    } else {
+      setUnAvailableTimeRange([]);
+    }
+
     if (response && response.length > 0) {
       const temp = response.map((r) => `${r.startTime}:00-${r.endTime}:00`);
       setUnAvailableTimes(temp)
@@ -90,12 +143,27 @@ const BookingPage = () => {
     setSelectedTimeRange('')
   };
 
+  const getBlockDates: any = async () => {
+    if (blockDateTimes && blockDateTimes.length > 0) {
+      return blockDateTimes;
+    }
+    const response = await getBlockOffTime();
+    if (response && response.length > 0) {
+      const allDayBlock = response.filter(r => r.isAllDay === true).map(r => dayjs(r.blockedDate).format('YYYY-MM-DD'));
+      setUnAvailableDates(allDayBlock);
+      const otherBlock = response.filter(r => r.isAllDay === false);
+      setBlockDateTimes(otherBlock)
+      return otherBlock;
+    }
+    return null;
+  }
+
 
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Container>
-        <Typography variant="h3" gutterBottom>Appointments</Typography>
+        <Typography variant="h4" gutterBottom>Appointments</Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Card>
@@ -125,7 +193,7 @@ const BookingPage = () => {
                       {b.bookedLocation === 'Online' &&
                         <Grid item xs={12} sm={6}>
                           <Button fullWidth variant="contained" type="button" color="primary"
-                            onClick={() => navigate(`/dashboard/meeting?meetingNumber=${b.meetingNumber}&meetingPassword=${b.meetingPassword}&email=${profile?.email}&name=${profile?.name}&role=0`)}>
+                            onClick={() => navigate(`/dashboard/meeting?meetingNumber=${b.meetingNumber}&meetingPassword=${b.meetingPassword}&email=${profile?.email}&name=${profile?.firstName}%20${profile?.lastName}&role=0`)}>
                             Join Meeting
                           </Button>
                         </Grid>
@@ -148,7 +216,7 @@ const BookingPage = () => {
               />
               <CardContent>
 
-                {userAppointments?.filter(u => dayjs(u.bookedDate).isBefore(dayjs())).map(b => (
+                {userAppointments?.filter(u => dayjs(u.bookedDate).isBefore(dayjs()) || u.status === 'Completed').map(b => (
                   <Box key={b.id} my={2} p={2} border={1} borderRadius={1}>
                     <Typography variant="h5">{b.bookedType}</Typography>
                     {/* <Typography sx={{ color: b.status === 'Pending' ? "orangered" : "green" }} variant="h6">{b.status}</Typography> */}
@@ -160,10 +228,11 @@ const BookingPage = () => {
                         <Typography textAlign="right" color="textSecondary">Time: {b.startTime}:00 - {b.endTime}:00 </Typography>
                       </Grid>
                     </Grid>
-                    <Button fullWidth variant="contained" type="submit" color="info">
-                      View Diagnosis
-                    </Button>
-
+                    {b.psychReports.some(p => p.isPublished) &&
+                      <Button fullWidth variant="contained" type="submit" color="info" onClick={() => { setPdfData(b); setPdfModalOpen(true); }}>
+                        View Psych Report
+                      </Button>
+                    }
                   </Box>
                 ))}
                 {(!userAppointments || !userAppointments.some(u => dayjs(u.bookedDate).isBefore(dayjs()))) &&
@@ -183,6 +252,8 @@ const BookingPage = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       disablePast
+                      maxDate={sixMosFromNow}
+                      shouldDisableDate={disableBlockDates}
                       format='YYYY-MM-DD'
                       label="Select Appointment Date"
                       value={dateTime}
@@ -206,10 +277,18 @@ const BookingPage = () => {
                       label="Select Time Range"
                     >
                       {timeRanges.map((range, index) => {
+                        var blockTime = false
                         const currentHour = dayjs().hour();
                         const isToday = dayjs().isSame(dateTime, 'day');
                         const startTime = Number(range.split(":")[0]);
-                        const disabled = unAvailableTimes.some(u => u === range) || (currentHour >= startTime && isToday);
+
+                        if (unavailableTimeRange && unavailableTimeRange.length > 0) {
+                          for (const u of unavailableTimeRange) {
+                            blockTime = startTime >= u.startTime && u.endTime >= (startTime + 1);
+                            if (blockTime) break;
+                          }
+                        }
+                        const disabled = unAvailableTimes.some(u => u === range) || blockTime || (currentHour >= startTime && isToday);
                         return (
                           <MenuItem key={index} value={range} disabled={disabled}>
                             {`${range}   ${disabled ? '(Unavailable)' : ''}`}
@@ -221,7 +300,7 @@ const BookingPage = () => {
                 </Grid>
                 <Grid item xs={12} sm={12}>
                   <TextField
-                    label="Topic / Agenda"
+                    label="What do you want to talk about?"
                     required
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -240,6 +319,9 @@ const BookingPage = () => {
           </CardContent>
         </Card>
       </Container>
+      <PdfGenerator open={pdfModalOpen}
+        handleClose={() => setPdfModalOpen(false)}
+        data={pdfModalData} assesmentReport={null} />
     </LocalizationProvider>
   );
 };

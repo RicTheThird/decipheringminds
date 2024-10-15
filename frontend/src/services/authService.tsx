@@ -52,6 +52,11 @@ export const login = async (data: any) => {
     return response;
 };
 
+export const myProfile = async () => {
+    const response = await axiosInstance.get(`/auth/me`);
+    return response.data;
+};
+
 export const invite = async (user: any) => {
     const response = await axiosInstance.post('/users/invite', user);
     return response;
@@ -81,6 +86,16 @@ export const resetPassword = async (data: any) => {
     const response = await axiosInstance.post(`/auth/reset-password`, data);
     return response;
 };
+
+export const changePassword = async (data: any) => {
+    const response = await axiosInstance.put(`/users/change-password`, data);
+    return response;
+};
+
+export const updateProfile = async (data: any) => {
+    const response = await axiosInstance.put(`/users`, data);
+    return response;
+}
 
 export const forgotPassword = async (data: any) => {
     const response = await axiosInstance.post(`/auth/forgot-password`, data);

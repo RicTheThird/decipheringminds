@@ -28,9 +28,11 @@ import {
   validatePassword,
 } from "../services/authService";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import dayjs from "dayjs";
 
 const Register: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const [agreePrivacyPolicy, setAgreePrivacyPolicy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = () => setShowPassword(!showPassword);
@@ -125,6 +127,11 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreePrivacyPolicy) {
+      setError('Please read and accept the privacy policy to continue')
+      return;
+    }
+
     if (!passwordPassed || passwordNotMatch) return;
     setLoading(true);
     try {
@@ -133,6 +140,7 @@ const Register: React.FC = () => {
         setError(response?.response.data);
       } else {
         setSubmitted(true);
+        setError('')
       }
       console.log(response);
     } catch (e) {
@@ -267,13 +275,14 @@ const Register: React.FC = () => {
                     <DatePicker
                       label="Birth Date"
                       value={formValues.birthDate}
+                      maxDate={dayjs()}
                       onChange={handleDateChange}
                       slots={{
                         textField: (textFieldProps) => (
                           <TextField fullWidth required {...textFieldProps} />
                         ),
                       }}
-                      //slots={(params) => <TextField {...params} fullWidth required />}
+                    //slots={(params) => <TextField {...params} fullWidth required />}
                     />
                   </LocalizationProvider>
                 </Grid>
@@ -375,9 +384,21 @@ const Register: React.FC = () => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="body2">
-                    By registering, you agree to our{" "}
+                  <Typography variant="body2" textAlign='left'>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={agreePrivacyPolicy}
+                          onChange={(e) => setAgreePrivacyPolicy(e.target.checked)}
+                          name="agreePrivacyPolicy"
+                          color="info"
+                        />
+                      }
+                      label="I have read and accept the"
+                    />
+
                     <Link
+                      style={{ marginLeft: '-10px' }}
                       component="button"
                       variant="body2"
                       onClick={handleOpen}
@@ -545,8 +566,8 @@ const Register: React.FC = () => {
             If you have any questions or concerns about this Privacy Policy or
             our practices, please contact us at:<br />
             <br />
-            <strong>DecipheringMinds.com </strong><br/>
-            Email: decipheringminds@gmail.com <br/>
+            <strong>DecipheringMinds.com </strong><br />
+            Email: decipheringminds@gmail.com <br />
           </Typography>
           <br />
           <Button onClick={handleClose} sx={{ mt: 2 }} variant="contained">

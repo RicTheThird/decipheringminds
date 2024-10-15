@@ -1,28 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using DecipheringMinds.BackEnd.Models;
+using DecipheringMinds.BackEnd.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using DecipheringMinds.BackEnd.Models;
-using Microsoft.AspNetCore.Authorization;
 using System.Net;
 using System.Text;
-using DecipheringMinds.BackEnd.Services;
 
 namespace DecipheringMinds.BackEnd.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController : BaseController
     {
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
+        private readonly IUserService _userService;
 
-        public UsersController(ApplicationDbContext context, IEmailService emailService)
+        public UsersController(ApplicationDbContext context, IEmailService emailService, IUserService userService)
         {
             _emailService = emailService;
+            _userService = userService;
             _context = context;
         }
 
@@ -52,32 +49,40 @@ namespace DecipheringMinds.BackEnd.Controllers
         // PUT: api/ApplicationUsers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutApplicationUser(int id, ApplicationUser applicationUser)
+        [HttpPut]
+        public async Task<IActionResult> PutApplicationUser(UserDTO userDTO)
         {
-            if (id != applicationUser.Id)
+            if (userDTO == null)
             {
                 return BadRequest();
             }
-
-            _context.Entry(applicationUser).State = EntityState.Modified;
-
-            try
+            var userId = GetUserId();
+            var applicationUser = await _context.Users.FindAsync(userId);
+            if (applicationUser == null)
             {
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ApplicationUserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            applicationUser.PhoneNumber = userDTO.PhoneNumber;
+            applicationUser.BirthDate = userDTO.BirthDate;
+            await _context.SaveChangesAsync();
 
+            return NoContent();
+        }
+
+        [Authorize]
+        [HttpPut("change-password")]
+        public async Task<IActionResult> PutNewPassword(ChangePasswordRequest request)
+        {
+            if (request.NewPassword == null)
+            {
+                return BadRequest();
+            }
+            var userId = GetUserId();
+
+            var user = await _userService.Authenticate(GetUserEmail(), request.CurrentPassword);
+            if (user == null) { return BadRequest("Current password given is incorrect."); }
+            user.PasswordHash = _userService.HashPassword(request.NewPassword);
+            await _userService.UpdateUser(user);
             return NoContent();
         }
 
@@ -151,5 +156,11 @@ namespace DecipheringMinds.BackEnd.Controllers
     public class InviteRequest
     {
         public string Email { get; set; }
+    }
+
+    public class ChangePasswordRequest
+    {
+        public string CurrentPassword { get; set; }
+        public string NewPassword { get; set; }
     }
 }

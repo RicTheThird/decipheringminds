@@ -36,5 +36,6 @@ namespace DecipheringMinds.BackEnd.Models
 
         public DbSet<DecipheringMinds.BackEnd.Models.Messages> Messages { get; set; } = default!;
         public DbSet<DecipheringMinds.BackEnd.Models.PsychReports> PsychReports { get; set; } = default!;
+        public DbSet<DecipheringMinds.BackEnd.Models.BlockOffTime> BlockOffTime { get; set; } = default!;
     }
 }

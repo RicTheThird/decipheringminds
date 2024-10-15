@@ -101,3 +101,22 @@ export const postPsychReport = async (data: any) => {
     const response = await axiosInstance.post(`/psychreports`, data);
     return response.data;
 }
+
+export const postBlockOffTime = async (data: any) => {
+    return await axiosInstance.post('/blockofftimes', data);
+}
+
+export const getBlockOffTime = async () => {
+    const response = await axiosInstance.get('/blockofftimes');
+    return response.data;
+}
+
+export const deleteSingleBlockOffTime = async (id: number) => {
+    const response = await axiosInstance.delete(`/blockofftimes/${id}`);
+    return response;
+}
+
+export const deleteRecurringBlockOffTime = async (id: number) => {
+    const response = await axiosInstance.delete(`/blockofftimes/recurring/${id}`);
+    return response;
+}

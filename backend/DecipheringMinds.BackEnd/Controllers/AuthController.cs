@@ -12,7 +12,7 @@ namespace DecipheringMinds.BackEnd.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
@@ -239,10 +239,22 @@ namespace DecipheringMinds.BackEnd.Controllers
 
         [HttpGet("me")]
         [Authorize]
-        public IActionResult GetUser()
+        public async Task<ActionResult<UserDTO>> GetUser()
         {
-            var userName = User.Identity.Name;
-            return Ok(new { UserName = userName });
+            var userEmail = GetUserEmail();
+            var user = await _userService.GetUserByEmail(userEmail);
+
+            var responseDTO = new UserDTO
+            {
+                Email = userEmail,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Gender = user.Gender,
+                BirthDate = user.BirthDate,
+                PhoneNumber = user.PhoneNumber
+            };
+
+            return Ok(responseDTO);
         }
 
         public static string DecodeTokenKey(string rawString)
@@ -274,4 +286,14 @@ public class ResetPasswordRequest
 {
     public string Token { get; set; }
     public string NewPassword { get; set; }
+}
+
+public class UserDTO
+{
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? Gender { get; set; }
+    public string? Email { get; set; }
+    public string? PhoneNumber { get; set; }
+    public DateTime? BirthDate { get; set; }
 }

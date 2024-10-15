@@ -117,7 +117,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         {
             var appointments = await _context.Appointments
                 .Include(a => a.PsychReports)
-                .Where(a => a.UserId == GetUserId() && a.Status != "Cancelled").ToListAsync();
+                .Where(a => a.UserId == GetUserId() && a.Status != "Cancelled").OrderByDescending(a => a.BookedDate).ToListAsync();
 
             if (appointments == null)
             {

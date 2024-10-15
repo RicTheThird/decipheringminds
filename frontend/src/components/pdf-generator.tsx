@@ -131,7 +131,7 @@ const MyDocument = ({ data, assessmentReport }) => (
         </Text>
       </View>
 
-      <View style={styles.section}>
+      {assessmentReport && <View style={styles.section}>
         <Text style={styles.subheader}>Assessment Result</Text>
         <View style={styles.table}>
           <View style={[styles.tableRow, styles.theader]}>
@@ -152,6 +152,7 @@ const MyDocument = ({ data, assessmentReport }) => (
           ))}
         </View>
       </View>
+      }
     </Page>
   </Document>
 );
