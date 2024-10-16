@@ -21,7 +21,7 @@ const cardData = [
   },
   {
     name: 'Ray Vincent Narvaez', role: 'Developer',
-    description: 'Rsy turns our ideas into reality by building robust software solutions, combining technical expertise with a passion for mental health.',
+    description: 'Ray turns our ideas into reality by building robust software solutions, combining technical expertise with a passion for mental health.',
     avatar: '/ray.jpg'
   },
   {

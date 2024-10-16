@@ -5,6 +5,7 @@ import AboutUs from '../components/about-us';
 import Cards from '../components/cards';
 import Testimonials from '../components/testimonials';
 import { Box, CssBaseline, Typography } from '@mui/material';
+import Footer from '../components/footer';
 
 const Home: React.FC = () => {
   return (
@@ -16,11 +17,12 @@ const Home: React.FC = () => {
         <AboutUs />
         <Testimonials />
            {/* Footer Section */}
-        <Box sx={{ bgcolor: 'primary.main', py: 3, mt: 6 }}>
+        {/* <Box sx={{ bgcolor: 'primary.main', py: 3, mt: 6 }}>
             <Typography color="white" textAlign="center">
             &copy; {new Date().getFullYear()} DecipheringMinds. All rights reserved.
             </Typography>
-        </Box>
+        </Box> */}
+        <Footer />
     </>
   );
 };
