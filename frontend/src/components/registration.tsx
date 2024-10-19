@@ -29,6 +29,7 @@ import {
 } from "../services/authService";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import dayjs from "dayjs";
+import { handleKeyDownNoNumeric } from "../utils/validation";
 
 const Register: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -248,6 +249,7 @@ const Register: React.FC = () => {
                   <TextField
                     label="First Name"
                     name="firstName"
+                    onKeyDown={handleKeyDownNoNumeric}
                     value={formValues.firstName}
                     onChange={handleInputChange}
                     variant="outlined"
@@ -261,6 +263,7 @@ const Register: React.FC = () => {
                   <TextField
                     label="Last Name"
                     name="lastName"
+                    onKeyDown={handleKeyDownNoNumeric}
                     value={formValues.lastName}
                     onChange={handleInputChange}
                     variant="outlined"

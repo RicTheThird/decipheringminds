@@ -16,6 +16,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { changePassword, myProfile, PasswordInvalidErrorMessage, updateProfile, validatePassword } from '../services/authService';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { handleKeyDownOnlyNumeric } from '../utils/validation';
 
 const Profile = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -196,7 +197,9 @@ const Profile = () => {
               label="Phone Number"
               variant="outlined"
               fullWidth
-              type='number'
+              inputProps={{ maxlength: 11}} 
+              type='text'
+              onKeyDown={handleKeyDownOnlyNumeric}
               value={phoneNumber}
               onChange={handlePhoneNumberChange}
             />

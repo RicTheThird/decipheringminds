@@ -161,20 +161,36 @@ namespace DecipheringMinds.BackEnd.Controllers
         // POST: api/Appointments
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Appointments>> PostAppointments(Appointments appointments)
+        public async Task<ActionResult<Appointments>> PostAppointments(Appointments request)
         {
+            //Validate booking limit - only twice a week
+            var weekAfterDate = request.BookedDate.AddDays(6);
+            var weekBeforeDate = request.BookedDate.AddDays(-6);
+
+            var existingApptsWeekBefore = await _context.Appointments
+                .Where(a => a.UserId == GetUserId() && a.BookedDate >= weekBeforeDate && a.BookedDate <= request.BookedDate && new List<string> { "Confirmed", "Completed" }.Contains(a.Status)).ToListAsync();
+
+            var existingApptsWeekAfter = await _context.Appointments
+                .Where(a => a.UserId == GetUserId() && a.BookedDate <= weekAfterDate && a.BookedDate >= request.BookedDate && new List<string> { "Confirmed", "Completed" }.Contains(a.Status)).ToListAsync();
+
+            if ((existingApptsWeekBefore != null && existingApptsWeekBefore.Count >= 2) ||
+                (existingApptsWeekAfter != null && existingApptsWeekAfter.Count >= 2))
+            {
+                return BadRequest("Sorry you have reach the maximum allowed booking per week. <br /> You are allowed to a maximum 2 bookings in a week.");
+            }
+
             ZoomMeetingResponse zoomDetails = null;
 
-            if (appointments.BookedLocation == "Online")
+            if (request.BookedLocation == "Online")
             {
-                zoomDetails = await _zoomApiService.GenerateZoomMeetingLink(appointments, GetUserEmail());
+                zoomDetails = await _zoomApiService.GenerateZoomMeetingLink(request, GetUserEmail());
                 if (zoomDetails != null)
                 {
-                    appointments.HostEmail = zoomDetails.host_email;
-                    appointments.MeetingNumber = zoomDetails.id;
-                    appointments.MeetingJoinUrl = zoomDetails.join_url;
-                    appointments.MeetingStartUrl = zoomDetails.start_url;
-                    appointments.MeetingPassword = zoomDetails.password;
+                    request.HostEmail = zoomDetails.host_email;
+                    request.MeetingNumber = zoomDetails.id;
+                    request.MeetingJoinUrl = zoomDetails.join_url;
+                    request.MeetingStartUrl = zoomDetails.start_url;
+                    request.MeetingPassword = zoomDetails.password;
                 }
                 else
                 {
@@ -182,10 +198,10 @@ namespace DecipheringMinds.BackEnd.Controllers
                 }
             }
 
-            appointments.UserId = GetUserId();
-            appointments.CreatedAt = DateTime.Now;
-            appointments.Status = "Confirmed";
-            _context.Appointments.Add(appointments);
+            request.UserId = GetUserId();
+            request.CreatedAt = DateTime.Now;
+            request.Status = "Confirmed";
+            _context.Appointments.Add(request);
             await _context.SaveChangesAsync();
 
             await _emailService.SendEmailAsync
@@ -193,12 +209,12 @@ namespace DecipheringMinds.BackEnd.Controllers
                     new
                     {
                         FirstName = GetUserFirstName(),
-                        Purpose = appointments.BookedType,
-                        BookedDate = appointments.CreatedAt.ToString("yyyy-MM-dd"),
-                        BookedTime = $"{appointments.StartTime}:00 - {appointments.EndTime}:00"
+                        Purpose = request.BookedType,
+                        BookedDate = request.CreatedAt.ToString("yyyy-MM-dd"),
+                        BookedTime = $"{request.StartTime}:00 - {request.EndTime}:00"
                     });
 
-            return CreatedAtAction("GetAppointments", new { id = appointments.Id }, appointments);
+            return CreatedAtAction("GetAppointments", new { id = request.Id }, request);
         }
 
         // DELETE: api/Appointments/5

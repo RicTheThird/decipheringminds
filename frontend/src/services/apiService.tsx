@@ -33,7 +33,7 @@ export const getUserTest = async (id: number) => {
 };
 export const postUserAppointment = async (data: any) => {
     const response = await axiosInstance.post('/appointments', data);
-    return response.data;
+    return response;
 };
 
 export const updateUserAppointmentStatus = async (status: string, id: number) => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Box, FormControl, InputLabel, Select, CardHeader, CircularProgress } from '@mui/material';
+import { Container, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Box, FormControl, InputLabel, Select, CardHeader, CircularProgress, Alert, Snackbar } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { useNavigate } from 'react-router-dom';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -18,7 +18,7 @@ const generateTimeRanges = (startHour, endHour) => {
   return timeRanges;
 };
 
-const timeRanges = generateTimeRanges(8, 17); // 9 AM to 5 PM
+const timeRanges = generateTimeRanges(8, 17); // 8 AM to 5 PM
 
 const sixMosFromNow = dayjs().add(6, 'months');
 
@@ -36,6 +36,8 @@ const BookingPage = () => {
   const [unavailableTimeRange, setUnAvailableTimeRange] = useState<any[]>([]);
   const [loading, setLoading] = useState(false); // Loading state
   const [profile, setUserProfile] = useState<any>(null)
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [alert, setAlert] = useState<any>(null);
 
 
   useEffect(() => {
@@ -78,10 +80,20 @@ const BookingPage = () => {
       endTime: Number(selectedTimeRange.split('-')[1].split(':')[0])
     }
     try {
-      await postUserAppointment(request);
+      const response: any = await postUserAppointment(request);
+
+      if (response.status < 299) {
+        setAlert({ message: `Successfully booked an appointment. <br /> A confirmation has been sent to your email.`, success: true })
+        setSnackOpen(true);
+      } else {
+        setAlert({ message: response.response.data, success: false })
+        setSnackOpen(true);
+      }
       await setAppointments();
       handleDateChange(dateTime)
     } catch (e) {
+      setAlert({ message: `Failed to create an appointment. Please try again later.`, success: true })
+      setSnackOpen(true);
       console.log(e)
     } finally {
       setLoading(false)
@@ -135,8 +147,10 @@ const BookingPage = () => {
     }
 
     if (response && response.length > 0) {
-      const temp = response.map((r) => `${r.startTime}:00-${r.endTime}:00`);
+      const temp = response.map((r) => `${r.startTime < 10 ? `0${r.startTime}` : r.startTime}:00-${r.endTime < 10 ? `0${r.endTime}` : r.endTime}:00`);
       setUnAvailableTimes(temp)
+      console.log('na timea')
+      console.log(temp)
     } else
       setUnAvailableTimes([])
     setDateTime(date);
@@ -319,6 +333,18 @@ const BookingPage = () => {
           </CardContent>
         </Card>
       </Container>
+
+      <Snackbar
+        open={snackOpen}
+        autoHideDuration={10000}
+        onClose={() => setSnackOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSnackOpen(false)} severity={alert?.success ? "success" : "error"} sx={{ width: '100%' }}>
+          <span dangerouslySetInnerHTML={ {__html: alert?.message}}></span>
+        </Alert>
+      </Snackbar>
+
       <PdfGenerator open={pdfModalOpen}
         handleClose={() => setPdfModalOpen(false)}
         data={pdfModalData} assesmentReport={null} />

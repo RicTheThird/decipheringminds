@@ -20,6 +20,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { confirmEmail, PasswordInvalidErrorMessage, register, registerStaff, validatePassword, verifyInvite } from "../services/authService";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { handleKeyDownNoNumeric } from "../utils/validation";
 
 
 const StaffRegister: React.FC = () => {
@@ -162,7 +163,7 @@ const StaffRegister: React.FC = () => {
             {error}
           </Typography>
         }
-        
+
         {isSubmitted && (
           <>
             <Typography variant="h5" className="gradient-text"
@@ -187,13 +188,13 @@ const StaffRegister: React.FC = () => {
             DecipheringMinds
           </Typography>
 
-          <Typography
-            variant="h6"
-            style={{ fontWeight: 700 }}
-            gutterBottom
-          >
-            Staff Registration
-          </Typography>
+            <Typography
+              variant="h6"
+              style={{ fontWeight: 700 }}
+              gutterBottom
+            >
+              Staff Registration
+            </Typography>
 
             <form onSubmit={handleSubmit}>
               <Grid container spacing={3} paddingTop={5}>
@@ -202,6 +203,7 @@ const StaffRegister: React.FC = () => {
                   <TextField
                     label="First Name"
                     name="firstName"
+                    onKeyDown={handleKeyDownNoNumeric}
                     value={formValues.firstName}
                     onChange={handleInputChange}
                     variant="outlined"
@@ -214,6 +216,7 @@ const StaffRegister: React.FC = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     label="Last Name"
+                    onKeyDown={handleKeyDownNoNumeric}
                     name="lastName"
                     value={formValues.lastName}
                     onChange={handleInputChange}

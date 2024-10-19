@@ -13,11 +13,13 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { getUserProfile, logout } from '../services/authService';
 import QuizIcon from '@mui/icons-material/Quiz';
-import { addResponseMessage, addUserMessage, Widget } from 'react-chat-widget';
+import { addResponseMessage, addUserMessage, Widget, toggleWidget, dropMessages } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
 import { getMyMessages, sendMessage } from '../services/apiService';
 import eventEmitter from '../services/eventEmitter';
 import { CalendarIcon } from '@mui/x-date-pickers';
+
+const activeLinkStyle = { fontWeight: 600, color: '#35cce6' };
 const drawerWidth = 240;
 
 // Utility function to generate a GUID
@@ -32,6 +34,7 @@ const generateGUID = () => {
 const Dashboard: React.FC = () => {
 
   const location = useLocation();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [chat, setChat] = useState<any[]>([]);
   const [chatIds, setChatIds] = useState<any[]>([]);
@@ -40,6 +43,8 @@ const Dashboard: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
+    dropMessages()
+    toggleWidget()
     getMessages()
   }, []);
 
@@ -124,7 +129,7 @@ const Dashboard: React.FC = () => {
       {/* Menu List */}
       <List>
         {profile?.role === 'Admin' &&
-          <ListItem component={Link} to="home">
+          <ListItem component={Link} to="home" sx={location.pathname === '/dashboard/home' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <DashboardIcon />
             </ListItemIcon>
@@ -133,7 +138,7 @@ const Dashboard: React.FC = () => {
         }
 
         {profile?.role === 'Admin' &&
-          <ListItem component={Link} to="patient">
+          <ListItem component={Link} to="patient" sx={location.pathname === '/dashboard/patient' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <AccountCircleIcon />
             </ListItemIcon>
@@ -141,7 +146,7 @@ const Dashboard: React.FC = () => {
           </ListItem>
         }
         {(profile?.role === 'Admin' || profile?.role === 'Staff') &&
-          <ListItem component={Link} to="chat-view">
+          <ListItem component={Link} to="chat-view" sx={location.pathname === '/dashboard/chat-view' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <ChatIcon />
             </ListItemIcon>
@@ -153,7 +158,7 @@ const Dashboard: React.FC = () => {
           </ListItem>
         }
         {(profile?.role === 'Admin') &&
-          <ListItem component={Link} to="questionnaire">
+          <ListItem component={Link} to="questionnaire" sx={location.pathname === '/dashboard/questionnaire' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <QuizIcon />
             </ListItemIcon>
@@ -162,7 +167,7 @@ const Dashboard: React.FC = () => {
         }
 
         {profile?.role === 'Customer' &&
-          <ListItem component={Link} to="questionnaire-user">
+          <ListItem component={Link} to="questionnaire-user" sx={location.pathname === '/dashboard/questionnaire-user' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <img
                 src="/questionnaire.png"
@@ -175,7 +180,7 @@ const Dashboard: React.FC = () => {
         }
 
         {profile?.role === 'Customer' &&
-          <ListItem component={Link} to="psych-result">
+          <ListItem component={Link} to="psych-result"  sx={location.pathname === '/dashboard/psych-result' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <img
                 src="/report.png"
@@ -228,7 +233,7 @@ const Dashboard: React.FC = () => {
         } */}
 
         {profile?.role === 'Customer' &&
-          <ListItem component={Link} to="calendar">
+          <ListItem component={Link} to="calendar" sx={location.pathname === '/dashboard/calendar' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <CalendarIcon />
             </ListItemIcon>
@@ -237,7 +242,7 @@ const Dashboard: React.FC = () => {
         }
 
         {profile?.role === 'Admin' &&
-          <ListItem component={Link} to="admin-calendar">
+          <ListItem component={Link} to="admin-calendar" sx={location.pathname === '/dashboard/admin-calendar' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <CalendarIcon />
             </ListItemIcon>
@@ -254,7 +259,7 @@ const Dashboard: React.FC = () => {
         </ListItem>
 
         {/* Account */}
-        <ListItem component={Link} to="profile">
+        <ListItem component={Link} to="profile" sx={location.pathname === '/dashboard/profile' ? activeLinkStyle : {}}>
           <ListItemIcon>
             <ManageAccountsIcon />
           </ListItemIcon>
@@ -262,7 +267,7 @@ const Dashboard: React.FC = () => {
         </ListItem>
 
         {profile?.role === 'Admin' &&
-          <ListItem component={Link} to="users">
+          <ListItem component={Link} to="users" sx={location.pathname === '/dashboard/users' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <PersonAddIcon />
             </ListItemIcon>
@@ -293,7 +298,8 @@ const Dashboard: React.FC = () => {
       {/* <CssBaseline /> */}
       {profile?.role === 'Customer' &&
         <Widget
-          //handleSubmit={handleSubmitMessage}
+          //toggleWidget={toggleWidget()}
+          //toggleMsgLoader
           handleNewUserMessage={handleNewUserMessage}
           subtitle="How are you feeling today?" />
       }
@@ -359,3 +365,7 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+function makeStyles(arg0: (theme: any) => { active: { backgroundColor: any; }; }) {
+  throw new Error('Function not implemented.');
+}
+
