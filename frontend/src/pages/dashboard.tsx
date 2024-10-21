@@ -13,14 +13,23 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { getUserProfile, logout } from '../services/authService';
 import QuizIcon from '@mui/icons-material/Quiz';
-import { addResponseMessage, addUserMessage, Widget, toggleWidget, dropMessages } from 'react-chat-widget';
+import { addResponseMessage, addUserMessage, Widget, toggleWidget, dropMessages, renderCustomComponent } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
 import { getMyMessages, sendMessage } from '../services/apiService';
 import eventEmitter from '../services/eventEmitter';
 import { CalendarIcon } from '@mui/x-date-pickers';
-
+import dayjs from 'dayjs';
+var relativeTime = require("dayjs/plugin/relativeTime");
+dayjs.extend(relativeTime);
 const activeLinkStyle = { fontWeight: 600, color: '#35cce6' };
 const drawerWidth = 240;
+
+
+declare module 'dayjs' {
+  interface Dayjs {
+    fromNow();
+  }
+}
 
 // Utility function to generate a GUID
 const generateGUID = () => {
@@ -85,21 +94,39 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const CustomTimeStampFragment = ({ date, toRight }) => {
+    return (
+      <div style={{ fontSize: 12, width: '100%', textAlign: toRight ? 'right' : 'left' }}>
+        {dayjs(date).fromNow()}
+      </div>
+    )
+  }
+
 
   const handleNewUserMessage = async (newMessage) => {
     const chatId = generateGUID()
     setChatIds((prevArray) => [...prevArray, chatId]);
+
+    renderCustomComponent(CustomTimeStampFragment, { date: dayjs(), toRight: true })
     await sendMessage({ fromPatient: true, message: newMessage, clientMsgId: chatId })
   };
 
   const writeResponse = (response: any[]) => {
     const newChat = response.filter(r => !chat.some(c => c.id === r.id))
+    const uniqueClientMessageId: string[] = []
     newChat.forEach(f => {
       if (f.recipientId === Number(localStorage.getItem('userId'))) {
+
         addResponseMessage(f.message);
+        renderCustomComponent(CustomTimeStampFragment, { date: f.createdAt, toRight: false })
       } else {
         if (!chatIds.some(c => c === f.clientMessageId))
-          addUserMessage(f.message)
+          if (!uniqueClientMessageId.some(u => u === f.clientMessageId)) {
+
+            addUserMessage(f.message)
+            renderCustomComponent(CustomTimeStampFragment, { date: f.createdAt, toRight: true })
+            uniqueClientMessageId.push(f.clientMessageId)
+          }
       }
     })
   }
@@ -180,7 +207,7 @@ const Dashboard: React.FC = () => {
         }
 
         {profile?.role === 'Customer' &&
-          <ListItem component={Link} to="psych-result"  sx={location.pathname === '/dashboard/psych-result' ? activeLinkStyle : {}}>
+          <ListItem component={Link} to="psych-result" sx={location.pathname === '/dashboard/psych-result' ? activeLinkStyle : {}}>
             <ListItemIcon>
               <img
                 src="/report.png"
@@ -300,6 +327,7 @@ const Dashboard: React.FC = () => {
         <Widget
           //toggleWidget={toggleWidget()}
           //toggleMsgLoader
+          showTimeStamp={false}
           handleNewUserMessage={handleNewUserMessage}
           subtitle="How are you feeling today?" />
       }
@@ -365,7 +393,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-function makeStyles(arg0: (theme: any) => { active: { backgroundColor: any; }; }) {
-  throw new Error('Function not implemented.');
-}
 

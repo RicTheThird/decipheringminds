@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DecipheringMinds.BackEnd.Models;
 using Microsoft.AspNetCore.Authorization;
+using DecipheringMinds.BackEnd.Extensions;
 
 namespace DecipheringMinds.BackEnd.Controllers
 {
@@ -107,7 +108,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         public async Task<ActionResult<PsychNotes>> PostPsychNotes(PsychNotes psychNotes)
         {
             psychNotes.CreatedBy = GetUserId();
-            psychNotes.CreatedAt = DateTime.Now;
+            psychNotes.CreatedAt = DateTime.UtcNow.ToSETimeFromUtc();
             psychNotes.IsPublished = false;
             psychNotes.IsDeleted = false;
             _context.PsychNotes.Add(psychNotes);

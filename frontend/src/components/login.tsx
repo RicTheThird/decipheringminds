@@ -3,12 +3,17 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, TextField, Typography, Link, Container, CircularProgress, IconButton, InputAdornment } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { login } from '../services/authService';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const redirectUrl = query.get('redirectUrl');
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +29,7 @@ const Login: React.FC = () => {
 
 
   useEffect(() => {
-    if(localStorage.getItem('sessiontimeout')) {
+    if (localStorage.getItem('sessiontimeout')) {
       setLoginError('You have been logged out due to session timeout.')
     }
   }, []);
@@ -42,7 +47,11 @@ const Login: React.FC = () => {
     try {
       const response: any = await login({ userName: formValues.userName, password: formValues.password })
       if (response.status === 200) {
-        navigate('/home');
+        console.log(redirectUrl)
+        if (redirectUrl)
+          navigate(redirectUrl);
+        else
+          navigate('/home');
       } else {
         setLoginError("Invalid User name or password")
       }
@@ -54,8 +63,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container >
-       {/* maxWidth={isMobile ? "" : "sm"}> */}
+    <Container maxWidth={isMobile ? "xs" : "sm"} >
       <Box
         display="flex"
         flexDirection="column"
@@ -73,11 +81,13 @@ const Login: React.FC = () => {
         {/* Logo */}
         <Box mb={3}>
           <img
+            onClick={() => navigate('/')}
             src="/logo-login.png"
             alt="Logo"
             style={{
               width: isMobile ? '300px' : '350px',
               height: 'auto',
+              cursor: 'pointer'
             }}
           />
         </Box>

@@ -72,9 +72,15 @@ const AboutUs: React.FC = () => {
 
       <Box sx={{ backgroundColor: "#F4FEFF", paddingTop: '10px', paddingBottom: '50px' }}>
 
-        <Box textAlign="center">
-          <Typography variant="h4" gutterBottom>About Us</Typography>
-        </Box>
+      <Typography
+          variant="h4"
+          component="h4"
+          textAlign="center"
+          sx={{ fontWeight: 700 }}
+          gutterBottom
+        >
+          About <span className="gradient-text">Us</span>{" "}
+        </Typography>
         <Grid
           container
           spacing={2}

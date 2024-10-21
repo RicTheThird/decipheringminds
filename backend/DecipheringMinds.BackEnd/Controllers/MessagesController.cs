@@ -1,4 +1,5 @@
-﻿using DecipheringMinds.BackEnd.Models;
+﻿using DecipheringMinds.BackEnd.Extensions;
+using DecipheringMinds.BackEnd.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -106,7 +107,7 @@ namespace DecipheringMinds.BackEnd.Controllers
                     message.ClientMessageId = msg.ClientMsgId;
                     message.Message = msg.Message;
                     message.IsSeen = false;
-                    message.CreatedAt = DateTime.Now;
+                    message.CreatedAt = DateTime.UtcNow.ToSETimeFromUtc();
                     message.SenderId = GetUserId();
                     messages.Add(message);
                 }
@@ -118,7 +119,7 @@ namespace DecipheringMinds.BackEnd.Controllers
                 message.RecipientId = msg.RecipientId ?? 0;
                 message.Message = msg.Message;
                 message.IsSeen = false;
-                message.CreatedAt = DateTime.Now;
+                message.CreatedAt = DateTime.UtcNow.ToSETimeFromUtc();
                 message.SenderId = GetUserId();
                 _context.Messages.Add(message);
             }
@@ -167,7 +168,7 @@ namespace DecipheringMinds.BackEnd.Controllers
         public string? Message { get; set; }
         public bool? FromPatient { get; set; } = false;
         public int? RecipientId { get; set; }
-        public int? SenderId { get; set;  }
+        public int? SenderId { get; set; }
         public string? ClientMsgId { get; set; }
     }
 }

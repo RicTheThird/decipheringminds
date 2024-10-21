@@ -6,6 +6,7 @@ import Cards from '../components/cards';
 import Testimonials from '../components/testimonials';
 import { Box, CssBaseline, Typography } from '@mui/material';
 import Footer from '../components/footer';
+import ChatUs from '../components/chat-us';
 
 const Home: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const Home: React.FC = () => {
         <Banner />
        
         <Cards />
+        <ChatUs />
         <AboutUs />
         <Testimonials />
            {/* Footer Section */}
