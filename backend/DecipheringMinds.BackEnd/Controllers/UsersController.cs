@@ -28,7 +28,8 @@ namespace DecipheringMinds.BackEnd.Controllers
         [HttpGet("role/{role}")]
         public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetAllUsers(string role)
         {
-            return await _context.Users.Where(u => u.Role == role && u.EmailVerified == true).ToListAsync();
+            return await _context.Users.Where(u => u.Role == role && u.EmailVerified == true)
+                .OrderBy(u => u.LastName).ToListAsync();
         }
 
         // GET: api/ApplicationUsers/5

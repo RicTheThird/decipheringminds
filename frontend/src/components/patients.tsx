@@ -96,10 +96,16 @@ const Patients: React.FC = () => {
 
   const getAppointment = async (userId: number) => {
     const response = await getUserAppointment(userId);
-    if (response && response.length)
+    if (response && response.length) {
       setAppointments(response)
-    else
+      const d = response.filter(r => r.status === 'Completed')
+        .map(r => ({ psychReports: r.psychReports.length > 0 ? r.psychReports[0] : [], appointmentDateTime: `${dayjs(r.bookedDate).format('YYYY-MM-DD')} ${r.startTime}:00-${r.endTime}:00` }));
+      setDiagnosis(d);
+    }
+    else {
       setAppointments([])
+      setDiagnosis([])
+    }
   }
 
   const publishTestResult = async (testId: number, score: any) => {
@@ -118,7 +124,7 @@ const Patients: React.FC = () => {
       const temp: any[] = []
       questionResults.map(q => {
         q.userTestScores.map(u => {
-          if(selectedAssessment.includes(u.id)) {
+          if (selectedAssessment.includes(u.id)) {
             temp.push({
               title: Questionnaires.find(qs => qs.id === q.testId)?.title,
               score: u.score,
@@ -150,8 +156,6 @@ const Patients: React.FC = () => {
   };
 
   const setPdfData = (data: any) => {
-    console.log(data)
-    console.log(selectedPatient)
     const result = data.psychReports[0] ?? null;
     const temp = {
       name: `${selectedPatient.firstName} ${selectedPatient.lastName}`,
@@ -165,7 +169,8 @@ const Patients: React.FC = () => {
       clinicalImpressionRecommendation: result?.clinicalImpressionRecommendation,
       generalObservation: result?.generalObservation,
       intakeInformation: result?.intakeInformation,
-      psychometricProfile: result?.psychometricProfile
+      psychometricProfile: result?.psychometricProfile,
+      diagnosis: result?.diagnosis
     };
     setPdfModalData(temp);
   }
@@ -176,7 +181,7 @@ const Patients: React.FC = () => {
         Patient Dashboard
       </Typography>
 
-      <UserSearch setSelectedPatient={getSelectedUserInfo} />
+      <UserSearch setSelectedPatient={getSelectedUserInfo} selectedPatient={selectedPatient} />
       {selectedPatient &&
         <Box marginBottom={3}>
           <Typography
@@ -375,9 +380,35 @@ const Patients: React.FC = () => {
             <Typography variant="h6">Diagnosis</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Typography>
+            {diagnosis && diagnosis.length > 0 &&
+              <TableContainer>
+                <Table stickyHeader>
+                  <TableHead >
+                    <TableRow className='root'>
+                      <TableCell>Appointment Date & Time</TableCell>
+                      <TableCell>Comment</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {diagnosis.map((row, index) =>
+                    (
+                      <TableRow
+                        hover
+                        tabIndex={-1}
+                        key={index}
+                      >
+                        <TableCell>{row.appointmentDateTime}</TableCell>
+                        <TableCell>{row.psychReports?.diagnosis}</TableCell>
+                      </TableRow>
+                    )
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            }
+            {diagnosis.length === 0 && <Typography >
               No diagnosis found
-            </Typography>
+            </Typography>}
           </AccordionDetails>
         </Accordion>
       </div>
@@ -442,7 +473,7 @@ const Patients: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
-          <Button onClick={() => { setPsychTestOpen(false); getAssessmentReport(); setPdfModalOpen(true)}} variant="contained" color="primary">
+          <Button onClick={() => { setPsychTestOpen(false); getAssessmentReport(); setPdfModalOpen(true) }} variant="contained" color="primary">
             Print
           </Button>
         </Box>

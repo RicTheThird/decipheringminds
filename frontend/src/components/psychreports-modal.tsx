@@ -11,6 +11,8 @@ import {
     CardMedia,
     Divider,
     CircularProgress,
+    Checkbox,
+    FormControlLabel,
 } from '@mui/material';
 import dayjs from 'dayjs';
 import { postPsychReport } from '../services/apiService';
@@ -34,6 +36,8 @@ const resetData = {
     assesmentProcedureResults: '',
     psychometricProfile: '',
     clinicalImpressionRecommendation: '',
+    diagnosis: '',
+    isPublished: false
 }
 
 const PsychReportModal = ({ open, data, psychReportMode, handleClose }) => {
@@ -169,6 +173,29 @@ const PsychReportModal = ({ open, data, psychReportMode, handleClose }) => {
                         value={formData.clinicalImpressionRecommendation}
                         onChange={handleChange}
                     />
+                    <TextField sx={inputStyle}
+                        name="diagnosis"
+                        label="Diagnosis"
+                        multiline
+                        rows={3}
+                        fullWidth
+                        variant="outlined"
+                        margin="normal"
+                        value={formData.diagnosis}
+                        onChange={handleChange}
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={formData.isPublished}
+                                onChange={(e) => setFormData((form) => ({...form, isPublished : e.target.checked}))}
+                                name="checkbox"
+                                color="primary"
+                            />
+                        }
+                        label="Publish Report to Patient"
+                    />
+                    <br />
                     <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }} disabled={loading}
                         startIcon={loading ? <CircularProgress size={20} /> : null}>
                         {psychReportMode === 'new' ? 'Submit' : 'Update'}

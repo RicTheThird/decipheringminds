@@ -1,21 +1,41 @@
-// src/UserSearch.js
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   TextField,
-  List,
-  ListItem,
-  ListItemText,
-  Container,
-  Typography,
-  Paper
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  Badge
 } from '@mui/material';
 import { getAllUsers } from '../services/apiService';
+import dayjs from 'dayjs';
 
-const UserSearch = ({ setSelectedPatient }) => {
+const UserSearch = ({ setSelectedPatient, selectedPatient }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  //const [selectedUser, setSelectedUser] = useState(null);
   const [patients, setPatients] = useState<any[]>([]);
-  const [searchResults, setSearchResult] = useState<any[]>([]);
+  const [patientList, setPatientList] = useState<any[]>([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+
+  useEffect(() => {
+    if (selectedPatient === null) {
+      setPatientList(patients)
+    }
+  }, [selectedPatient]);
 
   useEffect(() => {
     setAppointments();
@@ -25,31 +45,34 @@ const UserSearch = ({ setSelectedPatient }) => {
     const response = await getAllUsers('Customer')
     if (response && response.length) {
       setPatients(response);
+      setPatientList(response)
     } else {
       setPatients([])
+      setPatientList([])
     }
   };
 
   const onSearch = (key: string) => {
     setSearchTerm(key);
-    const filtered = patients.filter(user =>
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setSearchResult(filtered)
+    if (key !== null && key.trim() !== '') {
+      const filtered = patients.filter(user =>
+        user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setPatientList(filtered)
+    } else {
+      setPatientList(patients)
+    }
+
   }
   const handleUserClick = (user) => {
     setSelectedPatient(user);
     setSearchTerm('')
-    setSearchResult([]);
-    // You can add further logic here to handle user selection
   };
 
   return (
     <>
-      {/* <Typography variant="body1">
-        Search for Patient
-      </Typography> */}
       <TextField
         fullWidth
         variant="outlined"
@@ -58,26 +81,48 @@ const UserSearch = ({ setSelectedPatient }) => {
         onChange={(e) => onSearch(e.target.value)}
         margin="normal"
       />
-      {searchTerm && searchResults && searchResults.length > 0 &&
-        <Paper sx={{ position: 'absolute', zIndex: 999, width: '-webkit-fill-available', overflow: 'auto', maxHeight: '50vh' }}>
-          <List>
-            {searchResults.map((user) => (
-              <ListItem sx={{
-                '&:hover': {
-                  backgroundColor: '#007bff', // Change to your desired hover color
-                  color: 'white', // Change text color on hover
-                },
-              }}
-                key={user.id}
-                //selected={selectedUser?.id === user.id}
-                onClick={() => handleUserClick(user)}
-              >
-                <ListItemText primary={`${user.firstName} ${user.lastName}`} />
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
-      }
+      <Paper>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600 }}>Last Name</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>First Name</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Gender</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Birthdate</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {patientList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+                <TableRow hover key={row.id} onClick={() => handleUserClick(row)}>
+                  <TableCell component="th" scope="row" sx={{ cursor: 'pointer', fontWeight: row.id === selectedPatient?.id ? 'bold' : 'normal' }}>
+                    {row.lastName} {row.id === selectedPatient?.id && <Badge
+                    badgeContent="Selected"
+                    color="primary"
+                    sx={{ position: 'relative', left: '30px' }}
+                  />}
+                  </TableCell>
+                  <TableCell sx={{ cursor: 'pointer', fontWeight: row.id === selectedPatient?.id ? 'bold' : 'normal' }}>{row.firstName}</TableCell>
+                  <TableCell sx={{ cursor: 'pointer', fontWeight: row.id === selectedPatient?.id ? 'bold' : 'normal' }}>{row.gender}</TableCell>
+                  <TableCell sx={{ cursor: 'pointer', fontWeight: row.id === selectedPatient?.id ? 'bold' : 'normal' }}>{dayjs(row.birthDate).format('YYYY-MM-DD')}</TableCell>
+                  <TableCell sx={{ cursor: 'pointer', fontWeight: row.id === selectedPatient?.id ? 'bold' : 'normal' }}>{row.email}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={patientList.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Paper >
+      {/* } */}
     </>
   );
 };

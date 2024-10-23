@@ -13,7 +13,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { getUserProfile, logout } from '../services/authService';
 import QuizIcon from '@mui/icons-material/Quiz';
-import { addResponseMessage, addUserMessage, Widget, toggleWidget, dropMessages, renderCustomComponent } from 'react-chat-widget';
+import { addResponseMessage, addUserMessage, Widget, toggleWidget, dropMessages, renderCustomComponent, isWidgetOpened } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
 import { getMyMessages, sendMessage } from '../services/apiService';
 import eventEmitter from '../services/eventEmitter';
@@ -53,8 +53,9 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     dropMessages()
-    toggleWidget()
     getMessages()
+    if (!isWidgetOpened())
+      toggleWidget()
   }, []);
 
 
@@ -78,12 +79,12 @@ const Dashboard: React.FC = () => {
         eventEmitter.emit('messagePublished', response);
 
         const newMsgs = response.filter(c => (c.recipientId === Number(localStorage.getItem('userId'))) && !c.isSeen);
-        console.log('unread')
-        console.log(JSON.stringify(newMsgs))
+        // console.log('unread')
+        // console.log(JSON.stringify(newMsgs))
         const newMsgsCount = response.filter(c => (c.recipientId === Number(localStorage.getItem('userId'))) && !c.isSeen)?.length;
 
-        console.log('Unseen messages')
-        console.log(newMsgsCount)
+        // console.log('Unseen messages')
+        // console.log(newMsgsCount)
 
         setUnOpenedMsgs(newMsgsCount)
         setChat(response)
@@ -325,10 +326,12 @@ const Dashboard: React.FC = () => {
       {/* <CssBaseline /> */}
       {profile?.role === 'Customer' &&
         <Widget
-          //toggleWidget={toggleWidget()}
-          //toggleMsgLoader
+          profileClientAvatar={profile?.avatarLink}
+          profileAvatar="/dashboard-avatar.png"
           showTimeStamp={false}
           handleNewUserMessage={handleNewUserMessage}
+          title="Hi there!"
+          emojis={true}
           subtitle="How are you feeling today?" />
       }
       {/* AppBar for the top toolbar */}

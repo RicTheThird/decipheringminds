@@ -19,13 +19,14 @@ const Cards: React.FC = () => {
     },
     {
       title: "Personalized Approach",
-      image: "/chat.png",
+      image: "/personalized.png",
+      borderRadius: '100px',
       description: "Talk about the health complaints you are experiencing and don't hesitate to ask about the proper treatment",
     },
     {
-      title: "Visit Clinic",
+      title: "Online Consultations",
       image: "clinic.png",
-      description: "Get priority services in hospitals with expert. Which allows you to go to the hospital more practically and save time.",
+      description: "Access priority services for online consultations with experts, allowing you to receive care more conveniently and save time.",
     },
   ];
 
@@ -52,7 +53,7 @@ const Cards: React.FC = () => {
                   image={item.image} // Replace with your image URL
                   alt="Card Image"
                   sx={{
-                    borderRadius: "8px",
+                    borderRadius: item.borderRadius ?? "8px" ,
                     margin: "0 auto",
                     padding: 2,
                     width: "auto"

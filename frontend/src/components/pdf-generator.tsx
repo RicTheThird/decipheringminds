@@ -131,6 +131,13 @@ const MyDocument = ({ data, assessmentReport }) => (
         </Text>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.subheader}>Diagnosis</Text>
+        <Text style={styles.content}>
+          {data?.diagnosis}
+        </Text>
+      </View>
+
       {assessmentReport && <View style={styles.section}>
         <Text style={styles.subheader}>Assessment Result</Text>
         <View style={styles.table}>

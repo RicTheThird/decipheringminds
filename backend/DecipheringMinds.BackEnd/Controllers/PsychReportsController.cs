@@ -94,8 +94,8 @@ namespace DecipheringMinds.BackEnd.Controllers
 
             psychReports.CreatedAt = DateTime.Now;
             psychReports.UpdatedAt = DateTime.Now;
+            psychReports.IsPublished = psychReports.IsPublished;
             psychReports.CreatedBy = GetUserId();
-            psychReports.IsPublished = true;
             _context.PsychReports.Add(psychReports);
             await _context.SaveChangesAsync();
 

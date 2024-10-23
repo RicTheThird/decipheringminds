@@ -97,7 +97,7 @@ const Questionnaire: React.FC = () => {
           <Typography variant="h4" gutterBottom>
             Questionnaire
           </Typography>
-          <UserSearch setSelectedPatient={getSelectedUserInfo} />
+          <UserSearch setSelectedPatient={getSelectedUserInfo} selectedPatient={selectedPatient}/>
           {selectedPatient && <>
             <Typography
               variant="h6"

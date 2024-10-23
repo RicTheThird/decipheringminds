@@ -14,6 +14,7 @@ namespace DecipheringMinds.BackEnd.Models
         public string? AssesmentProcedureResults { get; set; }
         public string? PsychometricProfile { get; set; }
         public string? ClinicalImpressionRecommendation { get; set; }
+        public string? Diagnosis { get; set; }
         public bool? IsPublished { get; set; } = false;
         public bool? IsDeleted { get; set; } = false;
         public int CreatedBy { get; set; }

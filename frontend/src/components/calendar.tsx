@@ -114,7 +114,8 @@ const BookingPage = () => {
       clinicalImpressionRecommendation: result?.clinicalImpressionRecommendation,
       generalObservation: result?.generalObservation,
       intakeInformation: result?.intakeInformation,
-      psychometricProfile: result?.psychometricProfile
+      psychometricProfile: result?.psychometricProfile,
+      diagnosis: result?.diagnosis
     };
     setPdfModalData(temp);
   }
@@ -244,7 +245,7 @@ const BookingPage = () => {
                     </Grid>
                     {b.psychReports.some(p => p.isPublished) &&
                       <Button fullWidth variant="contained" type="submit" color="info" onClick={() => { setPdfData(b); setPdfModalOpen(true); }}>
-                        View Psych Report
+                        View Psych Report &amp; Diagnosis
                       </Button>
                     }
                   </Box>
