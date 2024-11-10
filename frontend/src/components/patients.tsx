@@ -109,8 +109,15 @@ const Patients: React.FC = () => {
   }
 
   const publishTestResult = async (testId: number, score: any) => {
-    score.isPublished = true;
-    await postUserScores(testId, [score]);
+    //score.isPublished = true;
+    console.log(testId)
+    console.log(score)
+
+    score.forEach(s => {
+      s.isPublished = true;
+    });
+
+    await postUserScores(testId, score);
     await getSelectedUserTest(selectedPatient.id)
   }
 
@@ -351,7 +358,7 @@ const Patients: React.FC = () => {
                             <TableCell>{dayjs(row?.submittedAt).format('YYYY-MM-DD')}</TableCell>
                             <TableCell>{s.isPublished ? 'Yes' : 'No'}</TableCell>
                             <TableCell>{!s.isPublished &&
-                              <Button fullWidth variant="contained" type="button" color="primary" onClick={() => publishTestResult(row.id, s)}>
+                              <Button fullWidth variant="contained" type="button" color="primary" onClick={() => publishTestResult(row.id, row.userTestScores)}>
                                 Publish
                               </Button>}
                             </TableCell>

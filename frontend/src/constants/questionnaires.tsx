@@ -61,7 +61,7 @@ export const Questionnaires = [
     id: "PHQ9",
     title: "Patient Health Questionnaire",
     subHeader: "Over the last 2 weeks, how often have you been bothered by any of the following problems?",
-    description:  "Thank you for considering our depression assessment. Your privacy is important, and your results will remain confidential. If you have any questions, we're here to help",
+    description: "Thank you for considering our depression assessment. Your privacy is important, and your results will remain confidential. If you have any questions, we're here to help",
     scoreRange: [
       {
         start: 0,
@@ -107,7 +107,7 @@ export const Questionnaires = [
         rate: 3,
         description: "Nearly everyday",
       },
-    ],    
+    ],
     selected: false,
     questions: [
       "Little interest or pleasure in doing things",
@@ -151,6 +151,98 @@ export const Questionnaires = [
     subHeader: "Read each statement and select which indicates how much the statement applied to you over the past week. There are no right or wrong answers. Do not spend too much time on any statement.",
     description: "Thank you for considering our Depression, Anxiety, and Stress Scales assessment. Your privacy is important, and your results will remain confidential. If you have any questions, we're here to help",
     selected: false,
+    scoreRanges: [
+      {
+        type: "Stress Severity",
+        scoring: [
+          {
+            start: 0,
+            end: 14,
+            value: "Normal Stress"
+          },
+          {
+            start: 15,
+            end: 18,
+            value: "Mild Stress"
+          },
+          {
+            start: 19,
+            end: 25,
+            value: "Moderate Stress"
+          },
+          {
+            start: 26,
+            end: 33,
+            value: "Severe Stress"
+          },
+          {
+            start: 34,
+            end: 100,
+            value: "Extremely Severe Stress"
+          }
+        ]
+      },
+      {
+        type: "Anxiety Severity",
+        scoring: [
+          {
+            start: 0,
+            end: 7,
+            value: "Normal Anxiety"
+          },
+          {
+            start: 8,
+            end: 9,
+            value: "Mild Anxiety"
+          },
+          {
+            start: 10,
+            end: 14,
+            value: "Moderate Anxiety"
+          },
+          {
+            start: 15,
+            end: 19,
+            value: "Severe Anxiety"
+          },
+          {
+            start: 20,
+            end: 100,
+            value: "Extremely Severe Anxiety"
+          }
+        ]
+      },
+      {
+        type: "Depression Severity",
+        scoring: [
+          {
+            start: 0,
+            end: 9,
+            value: "Normal Depression"
+          },
+          {
+            start: 10,
+            end: 13,
+            value: "Mild Depression"
+          },
+          {
+            start: 14,
+            end: 20,
+            value: "Moderate Depression"
+          },
+          {
+            start: 21,
+            end: 27,
+            value: "Severe Depression"
+          },
+          {
+            start: 28,
+            end: 100,
+            value: "Extremely Severe Depression"
+          }
+        ]
+      }
+    ],
     scales: [
       {
         rate: 0,

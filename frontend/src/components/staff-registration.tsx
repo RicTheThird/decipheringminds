@@ -21,6 +21,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { confirmEmail, PasswordInvalidErrorMessage, register, registerStaff, validatePassword, verifyInvite } from "../services/authService";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { handleKeyDownNoNumeric } from "../utils/validation";
+import dayjs from "dayjs";
 
 
 const StaffRegister: React.FC = () => {
@@ -67,7 +68,7 @@ const StaffRegister: React.FC = () => {
   const [formValues, setFormValues] = useState({
     firstName: "",
     lastName: "",
-    birthDate: null,
+    birthDate: dayjs().format('YYYY-MM-DD'),
     gender: "",
     email: "",
     passwordHash: "",
@@ -112,6 +113,7 @@ const StaffRegister: React.FC = () => {
     e.preventDefault();
     if (!passwordPassed || passwordNotMatch) return;
     setLoading(true)
+    formValues.birthDate = dayjs(formValues.birthDate).format('YYYY-MM-DD')
     try {
       const response: any = await registerStaff(token, formValues);
       if (response.status > 299) {
@@ -231,7 +233,9 @@ const StaffRegister: React.FC = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Birth Date"
-                      value={formValues.birthDate}
+                      value={dayjs(formValues.birthDate)}
+                      maxDate={dayjs()}
+                      format='YYYY-MM-DD'
                       onChange={handleDateChange}
                       slots={{
                         textField: (textFieldProps) => (

@@ -64,7 +64,7 @@ const Register: React.FC = () => {
   const [formValues, setFormValues] = useState({
     firstName: "",
     lastName: "",
-    birthDate: null,
+    birthDate: dayjs().format('YYYY-MM-DD'),
     gender: "",
     email: "",
     passwordHash: "",
@@ -132,9 +132,10 @@ const Register: React.FC = () => {
       setError('Please read and accept the privacy policy to continue')
       return;
     }
-
+    
     if (!passwordPassed || passwordNotMatch) return;
     setLoading(true);
+    formValues.birthDate = dayjs(formValues.birthDate).format('YYYY-MM-DD')
     try {
       const response: any = await register(formValues);
       if (response.status > 299) {
@@ -277,8 +278,9 @@ const Register: React.FC = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Birth Date"
-                      value={formValues.birthDate}
+                      value={dayjs(formValues.birthDate)}
                       maxDate={dayjs()}
+                      format='YYYY-MM-DD'
                       onChange={handleDateChange}
                       slots={{
                         textField: (textFieldProps) => (

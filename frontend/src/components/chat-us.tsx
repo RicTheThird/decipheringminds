@@ -94,6 +94,7 @@ const ChatUs: React.FC = () => {
                             <Typography variant="h5">Your Well-Wisher</Typography>
                             <div className={classes.chipContainer}>
                                 <Chip label="Depression" color="primary" />
+                                <Chip label="Stress" color="primary" />
                             </div>
                             <Typography variant="body2" gutterBottom>
                                 I believe that mental health is a key component of well-being and success.
@@ -141,6 +142,7 @@ const ChatUs: React.FC = () => {
                             <Typography variant="h5">Smiley</Typography>
                             <div className={classes.chipContainer}>
                                 <Chip label="Anxiety" color="primary" />
+                                <Chip label="Stress" color="primary" />
                             </div>
                             <Typography variant="body2" gutterBottom>
                                 My goal as an empathetic practitioner is creating a secure therapeutic
