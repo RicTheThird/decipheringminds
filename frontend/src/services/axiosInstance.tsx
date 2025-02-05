@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 // Create an Axios instance
 const axiosInstance = axios.create({
-    baseURL: "https://decipheringmindsph-api.azurewebsites.net/api"// -- for prod
+    baseURL: "https://decipheringminds-api.azurewebsites.net/api"// -- for prod
     //baseURL: "/api",
 });
 
